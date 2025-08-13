@@ -1,7 +1,30 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify, request
+from . import db
+from .models import Book
 
 main = Blueprint('main', __name__)
 
-@main.route('/')
-def home():
-    return "<h1>TopLivres from Blueprint</h1>"
+@main.route('/books', methods=["POST"])
+def add_book():
+    data = request.get_json()
+    new_book = Book(
+        title=data["title"],
+        unit_price=data["unit_price"]
+    )
+    db.session.add(new_book)
+    db.session.commit()
+    return jsonify({"message": "Book added successfully"}), 201
+
+@main.route('/books')
+def books_list():
+    books = Book.query.all()
+    return jsonify({
+        "data": [{"title": b.title, "unit_price": b.unit_price} for b in books]
+    }), 200
+
+@main.route('/books/<int:book_id>')
+def show_book(book_id):
+    book = db.get_or_404(Book, book_id) #Book.query.get(book_id)
+    return jsonify({
+        "data": {"title": book.title, "unit_price": book.unit_price}
+    }), 200
