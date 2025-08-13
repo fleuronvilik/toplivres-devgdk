@@ -19,12 +19,12 @@ def add_book():
 def books_list():
     books = Book.query.all()
     return jsonify({
-        "data": [{"title": b.title, "unit_price": b.unit_price} for b in books]
+        "data": [b.to_dict() for b in books]
     }), 200
 
 @main.route('/books/<int:book_id>')
 def show_book(book_id):
     book = db.get_or_404(Book, book_id) #Book.query.get(book_id)
     return jsonify({
-        "data": {"title": book.title, "unit_price": book.unit_price}
+        "data": book.to_dict()
     }), 200
