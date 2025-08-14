@@ -10,7 +10,7 @@ main = Blueprint('main', __name__)
 @main.route('/books', methods=["POST"])
 def add_book():
     data = request.get_json()
-    errors = book_schema.validate(data)
+    errors = book_schema.validate(data, session=db.session)
     if errors:
         return jsonify(errors), 400
     

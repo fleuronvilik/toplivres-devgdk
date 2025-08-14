@@ -1,12 +1,11 @@
-from marshmallow import Schema, fields, validate
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field # from marshmallow import Schema, fields, validate
+from .models import Book
 
-class BookSchema(Schema):
-    id = fields.Integer(dump_only=True) # Only for output
-    title = fields.String(
-        required=True,
-        validate=validate.Length(min=1, error="Title must not be empty")
-    )
-    unit_price = fields.Float(
-        required=True,
-        validate=validate.Range(min=0.01, error="Price must be greater than 0")
-    )
+class BookSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Book
+
+    id = auto_field(dump_only=True)
+    title = auto_field()
+    unit_price = auto_field()
+    serie_id = auto_field()
