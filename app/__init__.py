@@ -21,8 +21,8 @@ def create_app(test_config=None):
     jwt.init_app(app)
 
     from app.routes.auth import auth_bp
-    from app.routes.book import main
-    app.register_blueprint(main)
+    from app.routes.main import main_bp
+    app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
 
     return app

@@ -7,9 +7,21 @@ from flask_jwt_extended import jwt_required, get_jwt
 
 book_schema, books_schema = BookSchema(), BookSchema(many=True)
 
-main = Blueprint('main', __name__, url_prefix='/books')
+main_bp = Blueprint('main', __name__)
 
-@main.route('/', methods=["POST"])
+
+# -------------------------
+# CORE BUSINESS
+# -------------------------
+
+# -------------------------
+# CUSTOMERS
+# -------------------------
+
+# -------------------------
+# BOOKS
+# -------------------------
+@main_bp.route('/books', methods=["POST"])
 @jwt_required()
 def add_book():
     claims = get_jwt()
@@ -27,12 +39,12 @@ def add_book():
     db.session.commit()
     return jsonify({ "data": new_book.to_dict() }), 201
 
-@main.route('/')
+@main_bp.route('/books')
 def books_list():
     books = Book.query.all()
     return jsonify({ "data": books_schema.dump(books) }), 200
 
-@main.route('/<int:book_id>')
+@main_bp.route('/books/<int:book_id>')
 def show_book(book_id):
     book = db.get_or_404(Book, book_id) #Book.query.get(book_id)
     return jsonify({ "data": book_schema.dump(book) }), 200
