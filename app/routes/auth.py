@@ -1,38 +1,12 @@
 from flask import Blueprint, jsonify, request
-from . import db
-from .models import Book, User
-from .schemas import BookSchema, UserSchema
-
 from werkzeug.security import generate_password_hash, check_password_hash
+from app import db
+from app.models import User
+from app.schemas import UserSchema
 
-book_schema, books_schema = BookSchema(), BookSchema(many=True)
+auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
 user_schema = UserSchema()
-
-main = Blueprint('main', __name__)
-auth_bp = Blueprint("auth", __name__)
-
-@main.route('/books', methods=["POST"])
-def add_book():
-    data = request.get_json()
-    errors = book_schema.validate(data, session=db.session)
-    if errors:
-        return jsonify(errors), 400
-    
-    new_book = Book(**data)
-    db.session.add(new_book)
-    db.session.commit()
-    return jsonify({ "data": new_book.to_dict() }), 201
-
-@main.route('/books')
-def books_list():
-    books = Book.query.all()
-    return jsonify({ "data": books_schema.dump(books) }), 200
-
-@main.route('/books/<int:book_id>')
-def show_book(book_id):
-    book = db.get_or_404(Book, book_id) #Book.query.get(book_id)
-    return jsonify({ "data": book_schema.dump(book) }), 200
-
 
 # -------------------------
 # SIGNUP
@@ -73,11 +47,10 @@ def login():
     password = request.json.get("password")
 
     if not email or not password:
-        return jsonify({"error":"Email and password are required"})
+        return jsonify({"error": "Email and password are required"})
     
     user = User.query.filter_by(email=email).first()
     if not user or not user.check_password(password):
-        return jsonify({"Invalid email and password"}), 401
+        return jsonify({"error": "Invalid email and password"}), 401
     
     return jsonify({"message": f"Welcome {user.name}!"}), 200
-
