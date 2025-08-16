@@ -1,5 +1,6 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import date
 
 
 class BaseModel(db.Model):
@@ -20,8 +21,6 @@ class Series(BaseModel):
     )
 
 class Book(BaseModel):
-    __tablename__ = 'book' # not neccessary
-
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
     series_id = db.Column(
@@ -54,4 +53,34 @@ class User(BaseModel):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class Operation(db.Model):
+    __tablename__ = "operation"
+
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    op_type = db.Column(db.String(10), nullable=False, default="order")  # "order" or "sale"
+    date = db.Column(db.Date, nullable=False, default=date.today)
+
+    # relationships
+    customer = db.relationship("User", backref="operations")
+    items = db.relationship(
+        "OperationItem",
+        backref="operation",
+        cascade="all, delete-orphan"
+    )
+
     
+
+
+class OperationItem(db.Model):
+    __tablename__ = "operation_item"
+
+    id = db.Column(db.Integer, primary_key=True)
+    operation_id = db.Column(db.Integer, db.ForeignKey("operation.id"), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+
+    # relationships
+    book = db.relationship("Book")

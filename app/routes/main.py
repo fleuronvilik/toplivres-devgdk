@@ -1,11 +1,12 @@
 from flask import Blueprint, jsonify, request
 from app import db
-from app.models import Book
-from app.schemas import BookSchema
+from app.models import Book, Operation
+from app.schemas import BookSchema, OpSchema
 
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 
 book_schema, books_schema = BookSchema(), BookSchema(many=True)
+many_op = OpSchema(many=True)
 
 main_bp = Blueprint('main', __name__)
 
@@ -17,6 +18,19 @@ main_bp = Blueprint('main', __name__)
 # -------------------------
 # CUSTOMERS
 # -------------------------
+@main_bp.route("/history")
+@jwt_required()
+def get_history():
+    user_id = get_jwt_identity()
+    user_id = int(user_id)
+    
+    claims = get_jwt()
+
+    if claims.get("role") == "customer":
+        history = Operation.query.where(Operation.customer_id == user_id)
+        return many_op.dump(history), 200
+    return jsonify({"error": "expects a customer"}), 403
+
 
 # -------------------------
 # BOOKS
