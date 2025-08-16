@@ -32,7 +32,7 @@ def seed():
             address="123 Main St"
         )
         c2 = User(
-            name="Books",
+            name="Books Unlimited",
             email="contact@booksunltd.com",
             password_hash=generate_password_hash("3r51t5"),
             address="456 Market Rd"

@@ -1,6 +1,6 @@
 import marshmallow as mmlo
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields, auto_field
-from .models import Book, Series, User
+from .models import Book, Series, User, Operation
 
 class BookSeriesSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -35,4 +35,9 @@ class UserSchema(SQLAlchemyAutoSchema):
     email = mmlo.fields.Email(required=True)
     password = mmlo.fields.String(required=True, load_only=True)
 
-    
+
+class OpSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Operation
+        include_relationships = True
+        exclude = ("id", "items")
