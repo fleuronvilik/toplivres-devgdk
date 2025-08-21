@@ -79,3 +79,16 @@ Instead of following a static tutorial, AI guided decisions and explained concep
 - `GET /books` — list all books  
 - `GET /books/<id>` — get details of a book  
 - `POST /books` — create a new book (**admin only**)  
+
+## Orders vs Sales API by Role
+
+| **Endpoint**                 | **Customer**                                    | **Admin**                               |
+| ---------------------------- | ----------------------------------------------- | --------------------------------------- |
+| **POST /api/orders**             | ✅ Create *pending* order request                | ❌                                       |
+| **GET /api/orders**              | ✅ View own orders (pending + confirmed)         | ❌                                       |
+| **DELETE /api/orders/:id**      | ✅ Cancel own *pending* order                    | ✅ Cancel any order                      |
+| **PUT /api/admin/orders/:id/confirm** | ❌                                               | ✅ Approve → convert *pending* → *order* |
+| **POST /api/sales**              | ✅ Report sold books (with inventory validation) | ❌                                       |
+| **GET /api/sales**               | ✅ View own sales history                        | ❌                                       |
+| **GET /api/admin/operations**          | ❌                                               | ✅ View all operations (orders + sales)  |
+

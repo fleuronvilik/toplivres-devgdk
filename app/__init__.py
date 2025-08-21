@@ -29,7 +29,13 @@ def create_app(test_config=None):
 
     from app.routes.auth import auth_bp
     from app.routes.main import main_bp
+    from app.routes.orders import order_bp
+    from app.routes.sales import sales_bp
+    from app.routes.admin import admin_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(order_bp)
+    app.register_blueprint(sales_bp)
+    app.register_blueprint(admin_bp)
 
     return app

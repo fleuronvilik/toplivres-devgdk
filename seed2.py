@@ -36,17 +36,17 @@ def seed():
 
         # --- Operations ---
         # Alice's timeline
-        o1 = Operation(customer=alice, op_type="order", date=date(2024, 6, 22)) # apôtres
+        o1 = Operation(customer=alice, op_type="delivered", date=date(2024, 6, 22)) # apôtres
         db.session.add_all([
             OperationItem(operation=o1, book=enfants, quantity=5),
             OperationItem(operation=o1, book=mariage, quantity=5),
         ])
-        s1 = Operation(customer=alice, op_type="sale", date=date(2024, 7, 14)) # france
+        s1 = Operation(customer=alice, op_type="is_report", date=date(2024, 7, 14)) # france
         db.session.add_all([
             OperationItem(operation=s1, book=enfants, quantity=-3),
             OperationItem(operation=s1, book=mariage, quantity=-5),
         ])
-        o2 = Operation(customer=alice, op_type="order", date=date(2024, 7, 28)) # stjeanne
+        o2 = Operation(customer=alice, op_type="delivered", date=date(2024, 7, 28)) # stjeanne
         db.session.add_all([
             OperationItem(operation=o1, book=sommeil, quantity=5),
             OperationItem(operation=o1, book=mariage, quantity=5),
@@ -54,8 +54,8 @@ def seed():
         db.session.add_all([o1, s1, o2])
         db.session.commit()
 
-        # Bob submits a sales report
-        o3 = Operation(customer=bob, op_type="order", date=date(2024, 10, 3)) # deutschland, rentrée stars
+        # Bob submits a is_reports report
+        o3 = Operation(customer=bob, op_type="delivered", date=date(2024, 10, 3)) # deutschland, rentrée stars
         db.session.add_all([
             OperationItem(operation=o3, book=barreau, quantity=2),
             OperationItem(operation=o3, book=sommeil, quantity=10),
@@ -63,7 +63,7 @@ def seed():
         ])
 
         
-        s2 = Operation(customer=bob, op_type="sale", date=date(2024, 12, 31)) # ndlt
+        s2 = Operation(customer=bob, op_type="is_report", date=date(2024, 12, 31)) # ndlt
         db.session.add_all([
             OperationItem(operation=s2, book=barreau, quantity=-1),
             OperationItem(operation=s2, book=sommeil, quantity=-6)

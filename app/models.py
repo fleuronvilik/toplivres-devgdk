@@ -2,6 +2,20 @@ from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
 
+def inventory(customer_id=None, book_id=None):
+    if not customer_id and not book_id:
+        print("a sequence, it is")
+    elif customer_id and book_id:
+        print("how many of given book customer has")
+        timeline = Operation.query.filter_by(customer_id=customer_id).all()
+        count = 0
+        for op in timeline:
+            for i in op.items:
+                if i.book_id == book_id:
+                    print(i.quantity, " unités dans la commande ", op.id)
+                    count += i.quantity
+        return count
+
 
 class BaseModel(db.Model):
     __abstract__ = True
@@ -30,6 +44,9 @@ class Book(BaseModel):
     )
     unit_price = db.Column(db.Float, nullable=False)
 
+    def __repr__(self):
+        return self.title
+
 class User(BaseModel):
     __tablename__ = 'user'
 
@@ -53,6 +70,13 @@ class User(BaseModel):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def count_books(self, item_id):
+        return inventory(self.id, item_id)
+    
+    def __repr__(self):
+        return f"/u/{self.id}/ for {self.name}"
+
 
 
 class Operation(db.Model):
@@ -60,7 +84,7 @@ class Operation(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    op_type = db.Column(db.String(10), nullable=False, default="order")  # "order" or "sale"
+    op_type = db.Column(db.String(10), nullable=False, default="pending")  # "order" or "sale"
     date = db.Column(db.Date, nullable=False, default=date.today)
 
     # relationships

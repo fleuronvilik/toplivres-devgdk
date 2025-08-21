@@ -6,7 +6,7 @@ from app.models import User
 from app.schemas import UserSchema
 from datetime import timedelta
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 user_schema = UserSchema()
 
