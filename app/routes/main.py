@@ -75,7 +75,7 @@ def report_sale():
 
         op = Operation(
             customer=User.query.get(user_id),
-            op_type = "is_report",
+            op_type = "report",
             date=date.today()
         )
 
@@ -130,7 +130,7 @@ def get_inventory():
                 .join(Operation, Operation.customer_id == User.id)
                 .join(OperationItem, OperationItem.operation_id == Operation.id)
                 .join(Book, OperationItem.book_id == Book.id)
-                .where(and_(User.id == user_id, Operation.op_type != "pending"))
+                .where(and_(User.id == user_id, Operation.op_type != "pending", Operation.op_type != "cancelled"))
                 .group_by(Book.title, User.name)
         )
     else:
@@ -139,7 +139,7 @@ def get_inventory():
                 .join(Operation, Operation.customer_id == User.id)
                 .join(OperationItem, OperationItem.operation_id == Operation.id)
                 .join(Book, OperationItem.book_id == Book.id)
-                .where(Operation.op_type != "pending")
+                .where(Operation.op_type != "pending", Operation.op_type != "cancelled")
                 .group_by(Book.title, User.name)
         )
 

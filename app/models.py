@@ -1,20 +1,21 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import func
 from datetime import date
 
-def inventory(customer_id=None, book_id=None):
-    if not customer_id and not book_id:
-        print("a sequence, it is")
-    elif customer_id and book_id:
-        print("how many of given book customer has")
-        timeline = Operation.query.filter_by(customer_id=customer_id).all()
-        count = 0
-        for op in timeline:
-            for i in op.items:
-                if i.book_id == book_id:
-                    print(i.quantity, " unités dans la commande ", op.id)
-                    count += i.quantity
-        return count
+# def inventory(customer_id=None, book_id=None):
+#     if not customer_id and not book_id:
+#         print("a sequence, it is")
+#     elif customer_id and book_id:
+#         print("how many of given book customer has")
+#         timeline = Operation.query.filter_by(customer_id=customer_id).all()
+#         count = 0
+#         for op in timeline:
+#             for i in op.items:
+#                 if i.book_id == book_id:
+#                     print(i.quantity, " unités dans la commande ", op.id)
+#                     count += i.quantity
+#         return count
 
 
 class BaseModel(db.Model):
@@ -71,8 +72,16 @@ class User(BaseModel):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
-    def count_books(self, item_id):
-        return inventory(self.id, item_id)
+    def count_books(self, book_id):
+        """return inventory(self.id, item_id)"""
+        total = (
+            db.session.query(func.coalesce(func.sum(OperationItem.quantity), 0))
+            .join(Operation)
+            .filter(Operation.customer_id == self.id)
+            .filter(OperationItem.book_id == book_id)
+            .scalar()
+        )
+        return total
     
     def __repr__(self):
         return f"/u/{self.id}/ for {self.name}"

@@ -2,8 +2,8 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required 
 from app.models import Operation, db
 from app.schemas import BookSchema, OperationCancelSchema, OperationSchema
-from utils.decorators import role_required
-from utils.helpers import cancel_operation
+from app.utils.decorators import role_required
+from app.utils.helpers import cancel_operation
 from datetime import date
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")

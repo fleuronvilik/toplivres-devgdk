@@ -3,8 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 # from sqlalchemy import or_
 from app.models import Operation, User, Book, db
 from app.schemas import OperationSchema, OperationCancelSchema
-from utils.decorators import role_required
-from utils.helpers import cancel_operation
+from app.utils.decorators import role_required
+from app.utils.helpers import cancel_operation, can_request_delivery
 
 order_bp = Blueprint("order", __name__, url_prefix="/api/orders")
 
@@ -18,20 +18,16 @@ def create_order():
     if errors:
         return jsonify(errors), 400
 
-    pending = Operation.query.filter_by(op_type="pending")
-    if pending.first():
-        return jsonify({ "msg": "Complete or cancel existing request first" }), 403
-    
-    op = schema.load(data)
+    user_id = get_jwt_identity()
+    report, pending = can_request_delivery(user_id)
+    if pending:
+        return jsonify({ "msg": "Wait for delivery or cancel existing request first" }), 403
+    elif not report:
+        return jsonify({ "msg": "A report since last delivery is required" }), 403
 
-    ## book exists checks, could be skipped because of validation on the frontend
-    for item in data["items"]:
-        book_id = item["book_id"]
-        book = Book.query.get(book_id)
-        if not book:
-            return jsonify({ "msg": f"No book with id {book_id} in catalog" }), 400
+    op = schema.load(data)
     
-    op.customer_id = get_jwt_identity()  # assuming this is user id
+    op.customer_id = user_id
     db.session.add(op)
     db.session.commit()
     return schema.dump(op), 201

@@ -51,10 +51,10 @@ class ItemSchema(SQLAlchemyAutoSchema):
     book_id = auto_field(required=True)
     quantity = auto_field(required=True)
 
-    @mml.validates_schema
-    def validate_items(self, data, **kwargs):
-        if not len(data) > 0:
-            raise mml.ValidationError("At least one item is required.", "items")
+    # @mml.validates_schema
+    # def validate_items(self, data, **kwargs):
+    #     if not len(data) > 0:
+    #         raise mml.ValidationError("At least one item is required.", "items")
 
 class OperationSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -72,6 +72,15 @@ class OperationSchema(SQLAlchemyAutoSchema):
     )
     customer_id = auto_field(dump_only=True)
     # customer = mml.fields.Nested(UserSchema)
+
+    @mml.validates_schema
+    def validate_books_exist(self, data, **kwargs):
+        items =  data.get("items", [])
+        if not len(items) > 0:
+            raise mml.ValidationError("At least one item is required.", "items")
+        for item in items:
+            if not Book.query.get(item.book_id):
+                raise mml.ValidationError(f"No book with id {item.book_id} in catalog")
 
 class OperationCancelSchema(mml.Schema):
     customer_id = mml.fields.Integer(load_only=True)

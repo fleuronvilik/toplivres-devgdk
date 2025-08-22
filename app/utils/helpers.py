@@ -1,4 +1,5 @@
-from app.models import Operation, db
+from app.models import Operation, OperationItem, db
+from sqlalchemy import func
 from datetime import date
 
 # def inventory(customer_id=None, book_id=None):
@@ -14,23 +15,36 @@ from datetime import date
 #                     count += i.quantity
 #                 return count
 
+def get_inventory(user_id):
+    rows = (
+        db.session.query(OperationItem.book_id, func.sum(OperationItem.quantity))
+        .join(Operation)
+        .filter(Operation.customer_id == user_id)
+        .group_by(OperationItem.book_id)
+        .all()
+    )
+    # Turn list of tuples into dict { book_id: quantity }
+    return {book_id: qty or 0 for book_id, qty in rows}
+
 def can_request_delivery(user_id):
     last_delivery = (
         Operation.query
-        .filter_by(user_id=user_id)
+        .filter_by(customer_id=user_id)
         .filter(Operation.op_type.in_(['pending', 'delivered']))
-        .order_by(Operation.op_date.desc())
+        .order_by(Operation.date.desc())
         .first()
     )
     if not last_delivery:
-        return True  # No previous deliveries, can request
+        return True, None  # No previous deliveries, can request
+    if last_delivery.op_type == "pending":
+        return False, True
     report_exists = (
         Operation.query
-        .filter_by(user_id=user_id, op_type='report')
-        .filter(Operation.op_date > last_delivery.op_date)
+        .filter_by(customer_id=user_id, op_type='report')
+        .filter(Operation.date > last_delivery.date)
         .first()
     )
-    return report_exists is not None
+    return report_exists is not None, False
 
 def parse_date(date_str: str):
     [year, mm, dd] = map(int, date_str.split("-"))
@@ -49,6 +63,9 @@ def cancel_operation(customer_id, op_date, op_type="pending", is_admin=False):
     if not is_admin and customer_id == op.customer_id:
         raise PermissionError("Not allowed")
     
-    op.op_type = "cancelled"
+    if op.op_type == "report":
+        db.session.delete(op)
+    else:
+        op.op_type = "cancelled"
     db.session.commit()
     return op
