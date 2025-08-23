@@ -4,7 +4,8 @@ from app import db
 
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields, auto_field
 #from marshmallow import fields, validates_schema, ValidationError
-from .models import Book, Series, User, Operation, OperationItem
+from app.models import Book, Series, User, Operation, OperationItem
+from app.utils.helpers import get_inventory
 
 class BookSeriesSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -73,14 +74,72 @@ class OperationSchema(SQLAlchemyAutoSchema):
     customer_id = auto_field(dump_only=True)
     # customer = mml.fields.Nested(UserSchema)
 
+    # @mml.validates_schema
+    # def validate_books_exist(self, data, **kwargs):
+    #     items =  data.get("items", [])
+    #     if not len(items) > 0:
+    #         raise mml.ValidationError("At least one item is required.", "items")
+    #     for item in items:
+    #         if not Book.query.get(item.book_id):
+    #             raise mml.ValidationError(f"No book with id {item.book_id} in catalog")
+
+class BaseOperationSchema(OperationSchema):
+    class Meta(OperationSchema.Meta):
+        pass  # inherit model, fields, etc.
+
+class DeliveryOperationSchema(BaseOperationSchema):
     @mml.validates_schema
-    def validate_books_exist(self, data, **kwargs):
-        items =  data.get("items", [])
-        if not len(items) > 0:
+    def validate_items_for_delivery(self, data, **kwargs):
+        # only check structure + book existence
+        items = data.get("items", [])
+        if not items:
             raise mml.ValidationError("At least one item is required.", "items")
         for item in items:
             if not Book.query.get(item.book_id):
-                raise mml.ValidationError(f"No book with id {item.book_id} in catalog")
+                raise mml.ValidationError(f"No book with id {item.book_id} in catalog", "items")
+
+class SalesReportOperationSchema(BaseOperationSchema):
+    def __init__(self, *args, **kwargs):
+        self.user_id = kwargs.pop("user_id", None)   # pull it out manually
+        super().__init__(*args, **kwargs)
+
+    @mml.validates_schema
+    def validate_items_for_sales(self, data, **kwargs):
+        # check structure + book existence + inventory
+        items = data.get("items", [])
+        if not items:
+            raise mml.ValidationError("At least one item is required.", "items")
+
+        #user_id = self.context.get("user_id")  # pass user_id when loading
+        inventory, errors = get_inventory(self.user_id), {}
+        import pdb; pdb.set_trace()
+
+
+        for item in items:
+            # book_id = item.book_id #["book_id"]
+            # if not Book.query.get(book_id):
+            #     raise mml.ValidationError(f"No book with id {book_id} in catalog", "items")
+            # if inventory.get(book_id, 0) < item.quantity:
+            #     raise mml.ValidationError(
+            #         f"Insufficient stock for book {book_id}", "items"
+            #     )
+
+            book_id = item.book_id
+            qty = item.quantity
+
+            if book_id not in inventory:
+                errors.setdefault("items", []).append(
+                    {"book_id": book_id, "error": "Not in your inventory"}
+                )
+            elif inventory[book_id] < qty:
+                errors.setdefault("items", []).append(
+                    {"book_id": book_id, "error": f"Insufficient stock (have {inventory[book_id]})"}
+                )
+            item.quantity = -qty
+        
+        if errors:
+            raise mml.ValidationError(errors)
+
 
 class OperationCancelSchema(mml.Schema):
     customer_id = mml.fields.Integer(load_only=True)

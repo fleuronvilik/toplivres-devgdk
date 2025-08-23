@@ -19,7 +19,7 @@ def get_inventory(user_id):
     rows = (
         db.session.query(OperationItem.book_id, func.sum(OperationItem.quantity))
         .join(Operation)
-        .filter(Operation.customer_id == user_id)
+        .filter(Operation.customer_id == user_id, Operation.op_type.notin_(["cancelled", "pending"]))
         .group_by(OperationItem.book_id)
         .all()
     )

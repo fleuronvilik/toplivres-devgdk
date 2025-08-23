@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 # from sqlalchemy import or_
 from app.models import Operation, User, Book, db
-from app.schemas import OperationSchema, OperationCancelSchema
+from app.schemas import OperationSchema, DeliveryOperationSchema #, OperationCancelSchema
 from app.utils.decorators import role_required
 from app.utils.helpers import cancel_operation, can_request_delivery
 
@@ -13,7 +13,7 @@ order_bp = Blueprint("order", __name__, url_prefix="/api/orders")
 @role_required("customer")
 def create_order():
     data = request.get_json()
-    schema = OperationSchema()
+    schema = DeliveryOperationSchema()
     errors = schema.validate(data)
     if errors:
         return jsonify(errors), 400
@@ -51,3 +51,22 @@ def cancel_order_customer():
     customer_id = get_jwt_identity()
     op = cancel_operation(customer_id, data["op_date"])
     return OperationSchema().dump(op), 200
+
+@order_bp.route("/<int:operation_id>", methods=["DELETE"])
+@jwt_required()
+@role_required("customer")
+def cancel_order(operation_id):
+    # Does the operation exists,
+    # is it of the pending type
+    # is it owned by the customer sending the request
+    op = Operation.query.get(operation_id)
+    if not op or (op.op_type not in ["delivered", "pending"]) or (not op.customer_id == int(get_jwt_identity())):
+        return jsonify({"msg": "Not found"}), 404
+    #elif not op.customer_id == int(get_jwt_identity()):
+    #    return jsonify({"msg": "You don't own the request you are trying to cancel."}), 403
+    elif not op.op_type == "pending":
+        return jsonify({"msg": "You can only cancel pending request"}), 403
+    
+    op.op_type = "cancelled"
+    db.session.commit()
+    return OperationSchema().dump(op), 204

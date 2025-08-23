@@ -73,12 +73,12 @@ class User(BaseModel):
         return check_password_hash(self.password_hash, password)
     
     def count_books(self, book_id):
-        """return inventory(self.id, item_id)"""
         total = (
             db.session.query(func.coalesce(func.sum(OperationItem.quantity), 0))
             .join(Operation)
             .filter(Operation.customer_id == self.id)
             .filter(OperationItem.book_id == book_id)
+            .filter(Operation.op_type.notin_(["pending", "cancelled"]))
             .scalar()
         )
         return total

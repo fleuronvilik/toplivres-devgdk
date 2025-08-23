@@ -56,6 +56,24 @@ def cancel_op_admin():
     # schema = OperationSchema()
     # return schema.dump(op), 204
 
+@admin_bp.route("/operations/<int:operation_id>", methods=["DELETE"])
+@jwt_required()
+@role_required("admin")
+def delete_operation(operation_id):
+    op = Operation.query.get(operation_id)
+    if not op:
+        return jsonify({"msg": "Not found"}), 404
+    db.session.delete(op)
+    db.session.commit()
+    return OperationSchema().dump(op), 204
+
+@admin_bp.route("/operations", methods=["GET"])
+@jwt_required()
+@role_required("admin")
+def all_operations():
+    all_op = Operation.query.all()
+    return OperationSchema(many=True).dump(all_op)
+
 
 @admin_bp.route("/books", methods=["POST"])
 @jwt_required()

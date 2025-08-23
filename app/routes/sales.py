@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import Operation, User, Book, db
-from app.schemas import OperationSchema
+from app.schemas import OperationSchema, SalesReportOperationSchema
 from app.utils.decorators import role_required
 from app.utils.helpers import get_inventory
 
@@ -27,9 +27,11 @@ def report_sale():
     # if not is_last_delivery(user.id):
     #    return jsonify({ "msg": "Cannot submit a new report" }), 403
 
-    schema = OperationSchema()
+    schema = SalesReportOperationSchema(user_id=user.id)
     data = request.get_json()
-    sale = schema.load(data)
+    errors = schema.validate(data)
+    if errors:
+        return jsonify(errors), 400
     # import pdb; pdb.set_trace()
     # for i, item in enumerate(data["items"]):
     #     book = Book.query.get(item["book_id"])
@@ -42,33 +44,33 @@ def report_sale():
     #         print(f"Ok! {book.title}")
     #         sale.items[i].quantity = -item["quantity"]
 
-    inventory, errors = get_inventory(get_jwt_identity()), []
+    sale = schema.load(data) #inventory, errors = get_inventory(get_jwt_identity()), []
     
-    for i, item in enumerate(data["items"]):
-        book = Book.query.get(item["book_id"])   # still validate existence
-        if not book:
-            errors.append({"book_id": item["book_id"], "error": "Not in catalog"})
-            continue
+    #for i, item in enumerate(sale.items):
+        # book = Book.query.get(item["book_id"])   # still validate existence
+        # if not book:
+        #     errors.append({"book_id": item["book_id"], "error": "Not in catalog"})
+        #     continue
 
-        current_qty = inventory.get(book.id, 0)  # 0 if never had this book
-        if current_qty < item["quantity"]:
-            errors.append({
-                "book_id": book.id,
-                "error": f"Insufficient stock (have {current_qty}, need {item['quantity']})"
-            })
-            continue
+        # current_qty = inventory.get(book.id, 0)  # 0 if never had this book
+        # if current_qty < item["quantity"]:
+        #     errors.append({
+        #         "book_id": book.id,
+        #         "error": f"Insufficient stock (have {current_qty}, need {item['quantity']})"
+        #     })
+        #     continue
 
         # Flip sign to mark sale
-        sale.items[i].quantity = -item["quantity"]
+        # sale.items[i].quantity = -item["quantity"]
+    #    item.quantity = -item.quantity
     
-    if errors:
-        return jsonify({"errors": errors}), 400
+    #if errors:
+    #    return jsonify({"errors": errors}), 400
     
     sale.customer_id = user.id
     sale.op_type = "report"
     db.session.add(sale)
     db.session.commit()
-    print("report saved") # return jsonify({ "msg": "work in progress" })
     return schema.dump(sale), 201
 
 def is_last_delivery(customer_id):
