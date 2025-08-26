@@ -35,16 +35,16 @@ def can_request_delivery(user_id):
         .first()
     )
     if not last_delivery:
-        return True, None  # No previous deliveries, can request
-    if last_delivery.op_type == "pending":
-        return False, True
+        return None, None # No previous deliveries, can request
+    # if last_delivery.op_type == "pending":
+    #     return False, True
     report_exists = (
         Operation.query
         .filter_by(customer_id=user_id, op_type='report')
-        .filter(Operation.date > last_delivery.date)
+        .filter(Operation.id > last_delivery.id) #.filter(Operation.date > last_delivery.date)
         .first()
     )
-    return report_exists is not None, False
+    return report_exists is not None, last_delivery
 
 def parse_date(date_str: str):
     [year, mm, dd] = map(int, date_str.split("-"))

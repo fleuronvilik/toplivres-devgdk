@@ -63,7 +63,7 @@ class OperationSchema(SQLAlchemyAutoSchema):
         load_instance = True
         include_relationships = True
         sqla_session = db.session
-        exclude = ("id", "customer")
+        exclude = ("customer",)
 
     # Only needed on input (payload)
     items = mml.fields.List(
@@ -72,20 +72,12 @@ class OperationSchema(SQLAlchemyAutoSchema):
         load_only=True
     )
     customer_id = auto_field(dump_only=True)
-    # customer = mml.fields.Nested(UserSchema)
 
-    # @mml.validates_schema
-    # def validate_books_exist(self, data, **kwargs):
-    #     items =  data.get("items", [])
-    #     if not len(items) > 0:
-    #         raise mml.ValidationError("At least one item is required.", "items")
-    #     for item in items:
-    #         if not Book.query.get(item.book_id):
-    #             raise mml.ValidationError(f"No book with id {item.book_id} in catalog")
 
 class BaseOperationSchema(OperationSchema):
     class Meta(OperationSchema.Meta):
         pass  # inherit model, fields, etc.
+
 
 class DeliveryOperationSchema(BaseOperationSchema):
     @mml.validates_schema
@@ -112,18 +104,9 @@ class SalesReportOperationSchema(BaseOperationSchema):
 
         #user_id = self.context.get("user_id")  # pass user_id when loading
         inventory, errors = get_inventory(self.user_id), {}
-        import pdb; pdb.set_trace()
 
 
         for item in items:
-            # book_id = item.book_id #["book_id"]
-            # if not Book.query.get(book_id):
-            #     raise mml.ValidationError(f"No book with id {book_id} in catalog", "items")
-            # if inventory.get(book_id, 0) < item.quantity:
-            #     raise mml.ValidationError(
-            #         f"Insufficient stock for book {book_id}", "items"
-            #     )
-
             book_id = item.book_id
             qty = item.quantity
 
