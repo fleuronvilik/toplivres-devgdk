@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash
-from app import db
+from app.extensions import db
 from app.models import User
 from app.schemas import UserSchema
 from datetime import timedelta

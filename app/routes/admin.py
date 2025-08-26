@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from app.models import Operation, db
 from app.schemas import BookSchema, OperationCancelSchema, OperationSchema
 from app.utils.decorators import role_required
-from app.utils.helpers import cancel_operation
+from app.utils.helpers import error_response
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
 
@@ -16,7 +16,7 @@ def confirm_order(order_id: int):
     """
     order = Operation.query.get(order_id)
     if not order or order.op_type != "pending":
-        return jsonify({"msg": "Order not found or not pending"}), 404
+        return error_response("Order not found or not pending", 404, "order")
     
     order.op_type = "delivered"
     db.session.commit()
@@ -57,9 +57,9 @@ def all_operations():
 def add_book():
     data = request.get_json()
     schema = BookSchema()
-    errors = schema.validate(data, session=db.session)
-    if errors:
-        return jsonify(errors), 400
+    # errors = schema.validate(data, session=db.session)
+    # if errors:
+    #     return jsonify(errors), 400
     
     book = schema.load(data, session=db.session)
     db.session.add(book)

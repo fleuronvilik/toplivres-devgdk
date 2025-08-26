@@ -1,6 +1,6 @@
 # test/test_sales.py
 
-from app.utils.helpers import get_inventory # from pprint import pprint
+from app.services.operations import get_inventory # from pprint import pprint
 
 def test_customer_report_with_empty_items(client, auth_headers):
     res = client.post('/api/sales', json={"items": []}, headers=auth_headers["bob"])

@@ -1,4 +1,5 @@
-from app import db, create_app
+from app import create_app
+from app.extensions import db
 from app.models import User, Book, Series, Operation, OperationItem
 from werkzeug.security import generate_password_hash
 from datetime import date

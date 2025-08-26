@@ -1,11 +1,11 @@
 import marshmallow as mml
 
-from app import db
+from app.extensions import db
 
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields, auto_field
 #from marshmallow import fields, validates_schema, ValidationError
 from app.models import Book, Series, User, Operation, OperationItem
-from app.utils.helpers import get_inventory
+from app.services.operations import get_inventory
 
 class BookSeriesSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -110,14 +110,14 @@ class SalesReportOperationSchema(BaseOperationSchema):
             book_id = item.book_id
             qty = item.quantity
 
-            if book_id not in inventory:
-                errors.setdefault("items", []).append(
-                    {"book_id": book_id, "error": "Not in your inventory"}
-                )
+            book = Book.query.get(book_id)
+
+            if not book:
+                errors.setdefault("items", []).append(f"No book with id {book_id} in the catalog")
+            elif book_id not in inventory:
+                errors.setdefault("items", []).append(f"{book.title} not in your inventory")
             elif inventory[book_id] < qty:
-                errors.setdefault("items", []).append(
-                    {"book_id": book_id, "error": f"Insufficient stock (have {inventory[book_id]})"}
-                )
+                errors.setdefault("items", []).append(f"Insufficient stock ({inventory[book_id]}x {book.title})")
             item.quantity = -qty
         
         if errors:

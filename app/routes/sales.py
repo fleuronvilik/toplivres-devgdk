@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from marshmallow import ValidationError
 from app.models import Operation, User, db
 from app.schemas import OperationSchema, SalesReportOperationSchema
 from app.utils.decorators import role_required
@@ -28,11 +27,7 @@ def report_sale():
     schema = SalesReportOperationSchema(user_id=user.id)
     data = request.get_json()
 
-    try:
-        report = schema.load(data)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
-    
+    report = schema.load(data)
     
     report.customer_id = user.id
     report.op_type = "report"
