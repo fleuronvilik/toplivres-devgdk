@@ -15,7 +15,7 @@ def list_sales():
         Operation.customer_id == get_jwt_identity(),
         Operation.op_type == "report"
     )
-    return schema.dump(sales), 200
+    return jsonify({"data": schema.dump(sales)}), 200
 
 
 @sales_bp.route("", methods=["POST"])

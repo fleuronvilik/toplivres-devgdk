@@ -31,7 +31,7 @@ def can_request_delivery(user_id):
         Operation.query
         .filter_by(customer_id=user_id)
         .filter(Operation.op_type.in_(['pending', 'delivered']))
-        .order_by(Operation.date.desc())
+        .order_by(Operation.id.desc()) # Operation.date.desc()
         .first()
     )
     if not last_delivery:

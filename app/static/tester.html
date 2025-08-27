@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Toplivres API Tester</title>
+</head>
+
+<body>
+  <h1>Toplivres API Tester</h1>
+
+  <!-- Login Form -->
+  <section>
+    <h2>Login</h2>
+    <form id="login-form">
+      <label>Email: <input type="email" id="email" required></label><br>
+      <label>Password: <input type="password" id="password" required></label><br>
+      <button type="submit">Login</button>
+    </form>
+    <p id="login-result"></p>
+  </section>
+
+  <hr>
+
+  <!-- Order Form -->
+  <section>
+    <h2>Create Order</h2>
+    <form id="order-form">
+      <div id="books-list"></div>
+      <button type="submit">Submit Order</button>
+    </form>
+    <pre id="order-result"></pre>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const loginForm = document.getElementById("login-form");
+      const statusBox = document.getElementById("login-result");
+
+      const savedToken = localStorage.getItem("jwtToken");
+      if (savedToken) {
+        statusBox.innerText = "✅ Already logged in (token loaded from storage)";
+        fetchBooks();
+      }
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault()
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        try {
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          });
+
+          const data = await response.json()
+
+          if (!response.ok) {
+            statusBox.innerText = "❌ Login failed: " + (data.msg || "Unknown error");
+            return;
+          }
+
+          localStorage.setItem("jwtToken", data.access_token);
+
+          statusBox.innerText = "✅ Login successful. Token saved!";
+          console.log("JWT Token", data.access_token);
+          fetchBooks();
+        } catch (err) {
+          console.error("Network error:", err);
+          statusBox.innerText = "⚠️ Network error, check console.";
+        }
+      });
+    });
+
+    async function authFetch(url, options = {}) {
+      const token = localStorage.getItem("jwtToken");
+      if (!token) throw new Error("No token found. Please log in first.");
+
+      const headers = options.headers || {};
+      headers["Authorization"] = "Bearer " + token;
+      headers["Content-Type"] = "application/json";
+
+      return fetch(url, { ...options, headers });
+    }
+
+    async function fetchBooks() {
+
+      const res = await fetch("/api/books"); // {
+      //  headers: { "Authorization": "Bearer " + jwtToken }
+      //});
+      const data = await res.json();
+      console.log(data)
+      renderBooks(data.data || []);
+    }
+
+    function renderBooks(books) {
+      const container = document.getElementById("books-list");
+      container.innerHTML = "";
+      books.forEach(book => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+        <label>
+          <input type="checkbox" name="book" value="${book.id}">
+          ${book.title}
+        </label>
+        Quantity: <input type="number" name="qty-${book.id}" min="1" value="1">
+      `;
+        container.appendChild(div);
+      });
+    }
+
+    // After login success
+     //.addEventListener("submit", async (e) => {
+    // loginForm.addEventListener("submit", async (e) => {
+    //   e.preventDefault();
+
+    //   const email = document.querySelector("#email").value;
+    //   const password = document.querySelector("#password").value;
+
+    //   try {
+    //     const response = await fetch("/api/auth/login", {
+    //       method: "POST",
+    //       headers: { "Content-Type": "application/json" },
+    //       body: JSON.stringify({ email, password })
+    //     });
+
+    //     if (!response.ok) {
+    //       const err = await response.json();
+    //       console.error("Login error:", err);
+    //       return;
+    //     }
+
+    //     const data = await response.json();
+    //     jwtToken = data.access_token;
+    //     document.getElementById("login-result").textContent = "✅ Logged in!";
+    //     console.log("Login success:", data);
+    //     fetchBooks()
+    //   } catch (err) {
+    //     console.error("Network or fetch error:", err);
+    //   }
+    // });
+
+    // Handle order submit
+    document.getElementById("order-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      token = localStorage.getItem("jwtToken");
+
+      if (!token) {
+        document.getElementById("order-result").textContent = "⚠️ Please login first.";
+        return;
+      }
+
+      const items = [];
+      document.querySelectorAll("input[name='book']:checked").forEach(cb => {
+        const qtyInput = document.querySelector(`input[name='qty-${cb.value}']`);
+        items.push({ book_id: parseInt(cb.value, 10), quantity: parseInt(qtyInput.value, 10) });
+      });
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ items })
+      });
+
+      const data = await res.json();
+      document.getElementById("order-result").textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+
+</body>
+
+</html>
