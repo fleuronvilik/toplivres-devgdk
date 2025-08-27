@@ -6,7 +6,9 @@ def test_customer_report_with_empty_items(client, auth_headers):
     res = client.post('/api/sales', json={"items": []}, headers=auth_headers["bob"])
     assert res.status_code == 400
     data = res.get_json()
-    assert "least" in data["items"][0]
+    assert "errors" in data
+    assert "items" in data["errors"]
+    assert "least" in data["errors"]["items"][0]
 
 def test_customer_report_contains_only_book_in_his_inventory(client, auth_headers):
     payload = {
@@ -18,8 +20,10 @@ def test_customer_report_contains_only_book_in_his_inventory(client, auth_header
     res = client.post('/api/sales', json=payload, headers=auth_headers["bob"])
     assert res.status_code == 400
     data = res.get_json()
-    assert data["items"][0]["book_id"] == 3
-    assert "inventory" in data["items"][0]["error"]
+    assert "errors" in data
+    assert "items" in data["errors"]
+    assert "inventory" in data["errors"]["items"][0]
+    assert "Book Three" in data["errors"]["items"][0]
 
 def test_customer_report_with_invalid_quantities(client, auth_headers):
     payload = {
@@ -31,8 +35,10 @@ def test_customer_report_with_invalid_quantities(client, auth_headers):
     res = client.post('/api/sales', json=payload, headers=auth_headers["bob"])
     assert res.status_code == 400
     data = res.get_json()
-    assert data["items"][0]["book_id"] == 1
-    assert "Insufficient stock" in data["items"][0]["error"]
+    assert "errors" in data
+    assert "items" in data["errors"]
+    assert "Insufficient stock" in data["errors"]["items"][0]
+    assert "Book One" in data["errors"]["items"][0]
 
 def test_multiple_valid_reports(client, auth_headers):
     payload = {
@@ -68,7 +74,8 @@ def test_admin_cannot_report_sale(client, auth_headers):
     res = client.post('/api/sales', json={}, headers=auth_headers["admin"])
     assert res.status_code == 403
     data = res.get_json()
-    assert data["msg"] == "Forbidden"
+    assert "errors" in data
+    assert "auth" in data["errors"]
 
 def test_admin_can_delete_sale_report(client, auth_headers):
     payload = {
@@ -87,7 +94,8 @@ def test_admin_can_delete_sale_report(client, auth_headers):
     res = client.delete(f'/api/admin/operations/{report_id}', headers=auth_headers["bob"])
     assert res.status_code == 403
     data = res.get_json()
-    assert data["msg"] == "Forbidden"
+    assert "errors" in data
+    assert "auth" in data["errors"]
 
     res = client.delete(f'/api/admin/operations/{report_id}', headers=auth_headers["admin"])
     assert res.status_code == 204
@@ -96,3 +104,7 @@ def test_admin_can_delete_sale_report(client, auth_headers):
 
     res = client.delete(f'/api/admin/operations/{report_id}', headers=auth_headers["admin"])
     assert res.status_code == 404
+    data = res.get_json()
+    assert "errors" in data
+    assert "operation" in data["errors"]
+    assert "not found" in data["errors"]["operation"][0]
