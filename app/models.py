@@ -37,7 +37,7 @@ class Series(BaseModel):
 
 class Book(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
+    title = db.Column(db.String(120), unique=True, nullable=False)
     series_id = db.Column(
         db.Integer,
         db.ForeignKey('book_series.id', name='fk_book_series_id'),
@@ -60,6 +60,8 @@ class User(BaseModel):
     store_name = db.Column(db.String(30))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(20))
+
+    operations = db.relationship("Operation", backref="customer")
 
     __table_args__ = (
         db.UniqueConstraint('name', name='uq_customer_name'),
@@ -97,10 +99,10 @@ class Operation(db.Model):
     date = db.Column(db.Date, nullable=False, default=date.today)
 
     # relationships
-    customer = db.relationship("User", backref="operations")
+    # customer = db.relationship("User", backref="operations")
     items = db.relationship(
         "OperationItem",
-        backref="operation",
+        back_populates="operation",
         cascade="all, delete-orphan"
     )
 
@@ -116,4 +118,5 @@ class OperationItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
 
     # relationships
+    operation = db.relationship("Operation", back_populates="items")
     book = db.relationship("Book")

@@ -24,7 +24,7 @@ class BookSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
     title = auto_field()
     unit_price = auto_field()
-    series_id = auto_field()
+    # series_id = auto_field()
 
     # Nested field to display related BookSeries info
     series = fields.Nested(BookSeriesSchema, only=("name",), dump_only=True)
@@ -48,9 +48,12 @@ class ItemSchema(SQLAlchemyAutoSchema):
         load_instance = True
         sqla_session = db.session
         exclude = ("id", "operation_id")
+        #include_relationship = True
 
     book_id = auto_field(required=True)
     quantity = auto_field(required=True)
+    # book = ma.fields.Nested(BookSchema, only=("title",), dump_only=True)
+    book = ma.fields.Function(lambda obj: obj.book.title if obj.book else None)
 
     # @ma.validates_schema
     # def validate_items(self, data, **kwargs):
@@ -67,11 +70,11 @@ class OperationSchema(SQLAlchemyAutoSchema):
         # exclude = ("customer",)
 
     # Only needed on input (payload)
-    items = ma.fields.List(
-        ma.fields.Nested(ItemSchema),
-        required=True,
-        load_only=True
-    )
+    # items = ma.fields.List(
+    #     ma.fields.Nested(ItemSchema),
+    #     required=True,
+    # )
+    items = ma.fields.Nested(ItemSchema, many=True)
     customer = ma.fields.Nested(UserSchema, only=("id", "name")) #customer_id = auto_field(dump_only=True)
 
 
