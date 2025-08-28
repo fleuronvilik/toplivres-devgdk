@@ -1,4 +1,4 @@
-import marshmallow as mml
+import marshmallow as ma
 
 from app.extensions import db
 
@@ -38,8 +38,8 @@ class UserSchema(SQLAlchemyAutoSchema):
 
     id = auto_field(dump_only=True)
     name = auto_field()
-    email = mml.fields.Email(required=True)
-    password = mml.fields.String(required=True, load_only=True)
+    email = ma.fields.Email(required=True)
+    password = ma.fields.String(required=True, load_only=True)
 
 class ItemSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -52,10 +52,10 @@ class ItemSchema(SQLAlchemyAutoSchema):
     book_id = auto_field(required=True)
     quantity = auto_field(required=True)
 
-    # @mml.validates_schema
+    # @ma.validates_schema
     # def validate_items(self, data, **kwargs):
     #     if not len(data) > 0:
-    #         raise mml.ValidationError("At least one item is required.", "items")
+    #         raise ma.ValidationError("At least one item is required.", "items")
 
 class OperationSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -63,15 +63,16 @@ class OperationSchema(SQLAlchemyAutoSchema):
         load_instance = True
         include_relationships = True
         sqla_session = db.session
-        exclude = ("customer",)
+        # include_fk = True
+        # exclude = ("customer",)
 
     # Only needed on input (payload)
-    items = mml.fields.List(
-        mml.fields.Nested(ItemSchema),
+    items = ma.fields.List(
+        ma.fields.Nested(ItemSchema),
         required=True,
         load_only=True
     )
-    customer_id = auto_field(dump_only=True)
+    customer = ma.fields.Nested(UserSchema, only=("id", "name")) #customer_id = auto_field(dump_only=True)
 
 
 class BaseOperationSchema(OperationSchema):
@@ -80,27 +81,27 @@ class BaseOperationSchema(OperationSchema):
 
 
 class DeliveryOperationSchema(BaseOperationSchema):
-    @mml.validates_schema
+    @ma.validates_schema
     def validate_items_for_delivery(self, data, **kwargs):
         # only check structure + book existence
         items = data.get("items", [])
         if not items:
-            raise mml.ValidationError("At least one item is required.", "items")
+            raise ma.ValidationError("At least one item is required.", "items")
         for item in items:
             if not Book.query.get(item.book_id):
-                raise mml.ValidationError(f"No book with id {item.book_id} in catalog", "items")
+                raise ma.ValidationError(f"No book with id {item.book_id} in catalog", "items")
 
 class SalesReportOperationSchema(BaseOperationSchema):
     def __init__(self, *args, **kwargs):
         self.user_id = kwargs.pop("user_id", None)   # pull it out manually
         super().__init__(*args, **kwargs)
 
-    @mml.validates_schema
+    @ma.validates_schema
     def validate_items_for_sales(self, data, **kwargs):
         # check structure + book existence + inventory
         items = data.get("items", [])
         if not items:
-            raise mml.ValidationError("At least one item is required.", "items")
+            raise ma.ValidationError("At least one item is required.", "items")
 
         #user_id = self.context.get("user_id")  # pass user_id when loading
         inventory, errors = get_inventory(self.user_id), {}
@@ -121,10 +122,10 @@ class SalesReportOperationSchema(BaseOperationSchema):
             item.quantity = -qty
         
         if errors:
-            raise mml.ValidationError(errors)
+            raise ma.ValidationError(errors)
 
 
-class OperationCancelSchema(mml.Schema):
-    customer_id = mml.fields.Integer(load_only=True)
-    op_date = mml.fields.Date(required=True, load_only=True)
-    op_type = mml.fields.String(load_only=True)
+class OperationCancelSchema(ma.Schema):
+    customer_id = ma.fields.Integer(load_only=True)
+    op_date = ma.fields.Date(required=True, load_only=True)
+    op_type = ma.fields.String(load_only=True)

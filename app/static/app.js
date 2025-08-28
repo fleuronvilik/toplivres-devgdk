@@ -3,6 +3,11 @@ function getToken() {
   return localStorage.getItem("token");
 }
 
+function clearErrors() {
+  const box = document.getElementById("errorBox");
+  if (box) box.innerHTML = "";
+}
+
 function showError(message) {
   alert(message);  // quick immediate feedback
 
@@ -16,6 +21,7 @@ function showError(message) {
 }
 
 async function apiFetch(path, options = {}) {
+  clearErrors();
   const token = getToken();
   const res = await fetch(path, {
     ...options,
@@ -42,7 +48,7 @@ async function apiFetch(path, options = {}) {
     } else {
         showError(data.msg || res.statusText);
     }
-    // throw new Error("API Request failed"); //new Error(await res.text());
+    throw new Error("API Request failed"); //new Error(await res.text());
   }
   return data;
 }
@@ -103,6 +109,7 @@ async function loadCustomerOrders() {
       <td>${op.date}</td>
       <td>${op.op_type}</td>
       <td>
+        <button disabled class="viewItemsBtn">View items</button>
         ${op.op_type === "pending" 
           ? `<button data-id="${op.id}" class="cancelBtn">Cancel</button>` 
           : ""}
@@ -132,6 +139,9 @@ async function loadCustomerSales() {
     tr.innerHTML = `
       <td>${op.id}</td>
       <td>${op.date}</td>
+      <td>
+        <button disabled class="viewItemsBtn">View items</button>
+      </td>
     `;       // <td>${op.items.map(i => `${i.book_id} x${i.quantity}`).join(", ")}</td>
 
     tbody.appendChild(tr);
@@ -184,8 +194,9 @@ async function loadAdminOperations() {
       <td>${op.id}</td>
       <td>${op.op_type}</td>
       <td>${op.date}</td>
-      <td>${op.customer_id || ""}</td>
+      <td>${op.customer.name || ""}</td>
       <td>
+        <button disabled class="viewItemsBtn">View items</button>
         ${op.op_type === "pending" ? `<button data-action="confirm" data-id="${op.id}">Confirm</button>` : ""}
         <button data-action="delete" data-id="${op.id}">Delete</button>
       </td>
