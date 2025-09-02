@@ -4,6 +4,7 @@ from app.models import Operation, db
 from app.schemas import BookSchema, OperationCancelSchema, OperationSchema
 from app.utils.decorators import role_required
 from app.utils.helpers import error_response
+from app import log_event
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
 
@@ -20,7 +21,13 @@ def confirm_order(order_id: int):
     
     order.op_type = "delivered"
     db.session.commit()
-
+    log_event(
+        "order confirmed",
+        order_id=order.id,
+        customer_id=order.customer.id,
+        customer=order.customer.email,
+        books_count=sum(item.quantity for item in order.items)
+    )
     return jsonify({"msg": "Order confirmed"}), 200
 
 
@@ -30,8 +37,7 @@ def confirm_order(order_id: int):
 def delete_operation(operation_id):
     op = Operation.query.get(operation_id)
     if not op:
-        return jsonify({"msg": "Not found"}), 404
-    
+        return error_response("Order or Report not found", 404, "operation")    
     if op.op_type == "delivered":
         op.op_type = "cancelled"
         db.session.commit()
@@ -46,7 +52,7 @@ def delete_operation(operation_id):
 @jwt_required()
 @role_required("admin")
 def all_operations():
-    all_op = Operation.query.all()
+    all_op = Operation.query.filter_by()
     return OperationSchema(many=True).dump(all_op)
 
 

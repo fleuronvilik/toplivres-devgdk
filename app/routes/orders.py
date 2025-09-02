@@ -6,6 +6,7 @@ from app.schemas import OperationSchema, DeliveryOperationSchema #, OperationCan
 from app.services.operations import can_request_delivery
 from app.utils.decorators import role_required
 from app.utils.helpers import error_response
+from app import log_event
 
 order_bp = Blueprint("order", __name__, url_prefix="/api/orders")
 
@@ -27,6 +28,7 @@ def create_order():
     op.customer_id = user_id
     db.session.add(op)
     db.session.commit()
+    log_event("order created", order_id=op.id, customer=op.customer.email, books_count=sum([item.quantity for item in op.items]))
     return schema.dump(op), 201
 
 
@@ -58,4 +60,5 @@ def cancel_order(operation_id):
         return error_response("You can only cancel pending order", 403, "order")   
     op.op_type = "cancelled"
     db.session.commit()
+    log_event("order cancelled", order_id=op.id, customer=op.customer.email, reason="user_deleted_pending")
     return OperationSchema().dump(op), 204

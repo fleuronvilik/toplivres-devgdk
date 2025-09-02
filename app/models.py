@@ -43,7 +43,11 @@ class Book(BaseModel):
         db.ForeignKey('book_series.id', name='fk_book_series_id'),
         nullable=True
     )
-    unit_price = db.Column(db.Float, nullable=False)
+    unit_price = db.Column(db.Numeric(5, 2), nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint('title', name='uq_book_title'),
+    )
 
     def __repr__(self):
         return self.title
@@ -106,6 +110,13 @@ class Operation(db.Model):
         cascade="all, delete-orphan"
     )
 
+    def __repr__(self):
+        details = ''
+        for item in self.items:
+            details += str(item)
+            details += "\n"
+        return f'{self.customer.name}: {self.op_type} on {self.date}\n---\n{details}'
+
     
 
 
@@ -116,7 +127,17 @@ class OperationItem(db.Model):
     operation_id = db.Column(db.Integer, db.ForeignKey("operation.id"), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey("book.id"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    # unit_price_at_time = db.Column(db.Numeric(5, 2), nullable=False)
 
     # relationships
     operation = db.relationship("Operation", back_populates="items")
     book = db.relationship("Book")
+
+    def __repr__(self):
+        if self.quantity > 0:
+            return f"{self.quantity}x {self.book.title}\n"
+        else:
+            return f"{self.quantity} {self.book.title}\n"
+    
+    def __str__(self):
+        return f"{self.quantity} | {self.book.title}"

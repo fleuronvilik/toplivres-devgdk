@@ -12,7 +12,7 @@ def role_required(role):
             user_id = get_jwt_identity()
             user = User.query.get(user_id)
             if not user or user.role != role:
-                return error_response("Forbidden", 403, "auth")
+                return error_response(f"Forbidden to {role}", 403, "auth")
             return fn(*args, **kwargs)
         return wrapper
     return decorator

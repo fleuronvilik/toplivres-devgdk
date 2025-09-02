@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import Operation, User, db
 from app.schemas import OperationSchema, SalesReportOperationSchema
 from app.utils.decorators import role_required
+from app import log_event
 
 sales_bp = Blueprint("sale", __name__, url_prefix="/api/sales")
 
@@ -33,4 +34,6 @@ def report_sale():
     report.op_type = "report"
     db.session.add(report)
     db.session.commit()
+    log_event("report submitted", report_id=report.id, customer=report.customer.email,
+              books_count=-sum([item.quantity for item in report.items]))
     return schema.dump(report), 201

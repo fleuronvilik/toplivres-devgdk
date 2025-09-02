@@ -370,7 +370,6 @@ document.getElementById("addBookForm")?.addEventListener("submit", async (e) => 
 // });
 
 async function loadStats() {
-  debugger
   let customerId = currentUser.id;
   if (decodeRole() == "admin") customerId = window.PAGE_CONTEXT.customerId;
   const res = await apiFetch(`/api/users/${customerId}/stats`)

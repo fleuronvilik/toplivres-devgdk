@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Admin - Toplivres{% endblock %}
+{% block content %}
+<!-- ADMIN DASHBOARD -->
+<div id="adminDashboard" class="hidden">
+    <header>
+        <h2>Admin</h2>
+    </header>
+
+    <!-- Add book form -->
+    <div class="card">
+        <form id="addBookForm" class="dashboard-form">
+        <h3>Add Book</h3>
+        <input type="text" name="title" placeholder="Title" required>
+        <input type="number" name="unit_price" placeholder="Price" step="0.01" required>
+        <button type="submit" class="btn btn-primary">Add Book</button>
+        </form>
+    </div>
+
+    <!-- Operations table -->
+    <div class="card">
+        <h3>All Operations</h3>
+        <table id="adminOpsTable" class="table">
+        <thead>
+            <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

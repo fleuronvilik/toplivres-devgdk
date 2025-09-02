@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Toplivres{% endblock %}
+{% block content %}
+{% if role == "admin" %}
+<div id="customer-header">
+    <h2>Customer: <span id="customer-name">{{ customerName }}</span></h2>
+</div>
+{% endif %}
+<nav id="customerNavigation" class="hidden">
+    <div class="tabs">
+    {% if role == "customer" %}
+    <button class="tab-link active" data-tab="customerForm">New Order / Sale</button>
+    <button class="tab-link" data-tab="customerHistory">History</button>
+    {% endif %}
+    {% if role == "customer" %}
+    <button class="tab-link" data-tab="customerInventory">Inventory</button>
+    {% else %}
+    <button class="tab-link active" data-tab="customerInventory">Inventory</button>
+    {% endif %}
+    <button class="tab-link" data-tab="customerStats">Sales Stats</button>
+    </div>
+</nav>
+<div id="customerDashboard" class="tab-content hidden">
+    <!-- Header -->
+    {% if role == "customer" %}
+    <div id="customer-header">
+        <h2>Bienvenue dans ton espace client, <span id="customer-name">{{ customerName }}</span></h2>
+        <p>Ici, tu as la possibilité de faire des commandes et de les suivre. Nous t'offrons un historique ainsi que des statistiques de vente.</p>
+    </div>
+    {% endif %}
+
+    {% if role == "customer" %}
+    {% include "_book_selection.html" %}
+    <div id="customerHistory" class="tab-pane card">
+        <header class="flex">
+            <h3 style="margin-right: auto">History | Filter by type</h3>
+            <button class="btn" data-filter="order">Orders</button>
+            <button class="btn" data-filter="report">Reports</button>
+            <button class="btn btn-accent" data-filter="">All</button>
+        </header>
+        <table id="ordersTable" class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Inventory Section -->
+    {% if role == "customer" %}
+    <div id="customerInventory" class="tab-pane card">
+        <h2>Inventory</h2>
+        <table class="table" id="customer-inventory-table">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 border">Book Title</th>
+                    <th class="px-4 py-2 border">Stock</th>
+                </tr>
+            </thead>
+            <tbody id="inventory-table"></tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if role == "admin" %}
+    <div id="customerInventory" class="tab-pane active card">
+        <h2>Inventory</h2>
+        <table class="table" id="customer-inventory-table">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th>Book Title</th>
+                    <th>Stock</th>
+                </tr>
+            </thead>
+            <tbody id="inventory-table"></tbody>
+        </table>
+    </div>
+    {% endif %}
+        
+
+    <!-- Sales Stats Section -->
+    <div id="customerStats" class="tab-pane card">
+        <h2 class="text-xl font-semibold mb-4">Sales Stats</h2>
+        <canvas id="salesChart"></canvas>
+        <ul id="sales-stats" class="list-disc list-inside text-gray-700">
+            <li>Total Sales: <span id="total-sales">0</span></li>
+            <li>Total Revenue: <span id="total-revenue">0</span></li>
+        </ul>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}

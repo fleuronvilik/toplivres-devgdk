@@ -92,3 +92,14 @@ Instead of following a static tutorial, AI guided decisions and explained concep
 | **GET /api/sales**               | ✅ View own sales history                        | ❌                                       |
 | **GET /api/admin/operations**          | ❌                                               | ✅ View all operations (orders + sales)  |
 
+## Testing workflow
+
+1. Alice place an order containing a title not in catalog (book_id > 5)
+2. Alice try to add a book to catalog
+3. Admin add a sixth book
+4. Alice place an order containing only books from the updated catalog, a valid order
+5. Alice place a second order to place an order again
+6. Alice cancel the order
+7. Alice place a new order that is valid
+8. Admin confirm the delivery of Alice's pending order
+9. Alice submit a sale report <- try a new order instead and see if it passes even without sales reports following the previous one

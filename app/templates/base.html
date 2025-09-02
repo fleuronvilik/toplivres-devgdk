@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+      <script>
+        window.PAGE_CONTEXT = {
+            role: "{{ role }}"
+        };
+        {% if customerId %}
+            window.PAGE_CONTEXT.customerId = {{ customerId }};
+        {% endif %}
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+
+  <body>
+    <main class="container">
+        <div id="errorBox" class="error-box hidden"></div>
+        <div id="login-section">
+            <form id="loginForm" class="card">
+                <label>Email: <input type="email" name="email" required></label>
+                <label>Password: <input type="password" name="password" required></label>
+                <button type="submit" class="btn btn-submit">Login</button>
+            </form>
+        </div>
+        {% block content %}{% endblock %}
+    </main>
+    <!--
+    <div id="content"></div>
+    <div id="footer">
+      {% block footer %}
+      &copy; Copyright 2010 by <a href="http://domain.invalid/">you</a>.
+      {% endblock %}
+    </div>
+    -->
+  </body>
+</html>
