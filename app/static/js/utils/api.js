@@ -77,9 +77,19 @@ export async function loadBooks() {
   });
 }
 
+function resolveTargetCustomerId() {
+  const role = decodeRole();
+  const current = JSON.parse(localStorage.getItem("currentUser") || "null");
+  if (role === "admin") {
+    const detailRoot = document.getElementById("customerDetail");
+    const cid = detailRoot?.dataset?.customerId;
+    if (cid) return cid;
+  }
+  return current?.id;
+}
+
 export async function loadInventory() {
-  let customerId = JSON.parse(localStorage.getItem("currentUser")).id;
-  if (decodeRole() === "admin") customerId = window.PAGE_CONTEXT.customerId;
+  const customerId = resolveTargetCustomerId();
   const res = await apiFetch(`/api/users/inventory?id=${customerId}`);
 
   const tbody = document.querySelector("#customer-inventory-table tbody");
@@ -121,8 +131,7 @@ export async function loadCustomerOrders(typeFilter = "") {
 }
 
 export async function loadStats(salesChart) {
-  let customerId = JSON.parse(localStorage.getItem("currentUser")).id;
-  if (decodeRole() == "admin") customerId = window.PAGE_CONTEXT.customerId;
+  const customerId = resolveTargetCustomerId();
   const res = await apiFetch(`/api/users/${customerId}/stats`)
   const data = res.data;
 

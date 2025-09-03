@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, redirect, url_for
 from app.extensions import db
 from app.models import Book, Operation, OperationItem, User
 from app.schemas import BookSchema, OperationSchema, UserSchema
@@ -249,14 +249,16 @@ def show_book(book_id):
 # -------------------------
 @main_bp.route("/")
 def customer_self():
-    return render_template("customer.html", role="customer", customerId="")
-
-@main_bp.route("/users/<int:id>")
-def customer_detail_admin(id):
-    # Template is empty shell, data comes via JS (fetch API + localStorage)
-    customer = db.get_or_404(User, id)
-    return render_template("customer.html", customerId=id, role="admin", customerName=customer.name)
+    return render_template("customer.html")
 
 @main_bp.route("/admin")
 def admin():
-    return render_template("admin.html", role="admin")
+    return render_template("admin.html")
+
+@main_bp.route("/admin/users/<int:id>")
+def customer_detail_admin(id):
+    # Template is empty shell; data comes via JS fetches
+    customer = db.session.get(User, id)
+    if not customer or customer.role != "customer":
+        return redirect(url_for("main.admin"))
+    return render_template("customer_detail.html", customer_id=id, customer_name=customer.name)

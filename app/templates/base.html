@@ -20,14 +20,6 @@
     </script>
 
     <title>{% block title %}{% endblock %}</title>
-      <script>
-        window.PAGE_CONTEXT = {
-            role: "{{ role }}"
-        };
-        {% if customerId %}
-            window.PAGE_CONTEXT.customerId = {{ customerId }};
-        {% endif %}
-    </script>
     <script type="module" src="{{ url_for('static', filename='js/app.js') }}" defer></script>
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
 </head>
