@@ -3,6 +3,22 @@
 
 <head>
     <meta charset="UTF-8">
+
+    <!-- put this at the TOP of <head> on every shell -->
+    <style id="preload-guard">html{opacity:0}</style>
+    <script>
+    (function(){
+      try{
+        var t = localStorage.getItem('token');
+        var role = t ? JSON.parse(atob(t.split('.')[1])).role : null;
+        var p = location.pathname;
+        if (role==='admin' && p === '/') { location.replace('/admin'); return; }
+        if (role==='customer' && (p === '/admin' || p.startsWith('/users/'))) { location.replace('/'); return; }
+      }catch(e){}
+      var s=document.getElementById('preload-guard'); if(s) s.remove();
+    })();
+    </script>
+
     <title>{% block title %}{% endblock %}</title>
       <script>
         window.PAGE_CONTEXT = {
@@ -12,13 +28,12 @@
             window.PAGE_CONTEXT.customerId = {{ customerId }};
         {% endif %}
     </script>
-    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}" defer></script>
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
 </head>
 
   <body>
     <main class="container">
-        <div id="errorBox" class="error-box hidden"></div>
         <div id="login-section">
             <form id="loginForm" class="card">
                 <label>Email: <input type="email" name="email" required></label>

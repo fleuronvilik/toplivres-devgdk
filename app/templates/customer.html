@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Toplivres{% endblock %}
 {% block content %}
-{% if role == "admin" %}
-<div id="customer-header">
-    <h2>Customer: <span id="customer-name">{{ customerName }}</span></h2>
-</div>
-{% endif %}
 <nav id="customerNavigation" class="hidden">
     <div class="tabs">
     {% if role == "customer" %}
@@ -20,8 +15,16 @@
     <button class="tab-link" data-tab="customerStats">Sales Stats</button>
     </div>
 </nav>
-<div id="customerDashboard" class="tab-content hidden">
+<div id="errorBox" class="error-box hidden"></div>
+<div
+    id={% if role == "customer" %}"customerDashboard"{% else %}"customerDetail"{% endif %}
+    class="tab-content hidden">
     <!-- Header -->
+     {% if role == "admin" %}
+    <div id="customer-header">
+        <h2>Customer: <span id="customer-name">{{ customerName }}</span></h2>
+    </div>
+    {% endif %}
     {% if role == "customer" %}
     <div id="customer-header">
         <h2>Bienvenue dans ton espace client, <span id="customer-name">{{ customerName }}</span></h2>
@@ -32,11 +35,11 @@
     {% if role == "customer" %}
     {% include "_book_selection.html" %}
     <div id="customerHistory" class="tab-pane card">
-        <header class="flex">
-            <h3 style="margin-right: auto">History | Filter by type</h3>
-            <button class="btn" data-filter="order">Orders</button>
-            <button class="btn" data-filter="report">Reports</button>
-            <button class="btn btn-accent" data-filter="">All</button>
+        <header class="flex filter-buttons">
+            <h3>History | Filter by type</h3>
+            <button class="filter-btn" data-filter="order">Orders</button>
+            <button class="filter-btn" data-filter="report">Reports</button>
+            <button class="filter-btn active" data-filter="">All</button>
         </header>
         <table id="ordersTable" class="table">
             <thead>
