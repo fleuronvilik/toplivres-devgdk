@@ -1,4 +1,5 @@
 import { getToken, decodeRole } from "./dom.js";
+import { notify } from "../core/notifications.js";
 
 // Generic fetch with error handling & auth
 // Usage: await apiFetch("/api/some-endpoint", { method: "POST", body: JSON.stringify(data) });
@@ -25,11 +26,11 @@ export async function apiFetch(path, options = {}) {
     // Standardized error format: { "errors": { category: [messages...] } }
     if (data.errors) {
       for (const [category, messages] of Object.entries(data.errors)) {
-        messages.forEach(msg => showError(`[${category}] ${msg}`));
+        messages.forEach(msg => notify(`[${category}] ${msg}`, 'error'));
       }
     } else {
-      showError(data.msg || res.statusText);
-      logout();
+      notify(data.msg || res.statusText, 'error');
+      logout(); // Token has expired or is invalid
     }
     throw new Error("API Request failed"); //new Error(await res.text());
   }
@@ -176,10 +177,10 @@ function logout() {
 }
 
 function clearErrors() {
-  const box = document.getElementById("errorBox");
-  if (box) {
-    box.classList.add("hidden");
-    box.innerHTML = "";
+  const host = document.getElementById("alerts");
+  if (host) {
+    host.className = "hidden";
+    host.innerHTML = "";
   }
 }
 

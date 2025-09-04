@@ -23,7 +23,7 @@ class BookSchema(SQLAlchemyAutoSchema):
 
     id = auto_field(dump_only=True)
     title = auto_field()
-    unit_price = auto_field()
+    unit_price = auto_field(validate=ma.validate.Range(min=0.01))
     # series_id = auto_field()
 
     # Nested field to display related BookSeries info

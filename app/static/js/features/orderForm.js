@@ -1,3 +1,5 @@
+import { notify } from "../core/notifications.js";
+
 export function bindOrderForm(form, submitFn) {
   async function onSubmit(e) {
     e.preventDefault();
@@ -22,19 +24,19 @@ export function bindOrderForm(form, submitFn) {
       return;
     }
     // debugger
-    submitFn({ action, items });
+    //submitFn({ action, items });
 
 
     // disable buttons during submit
-    // form.querySelectorAll('button[type="submit"]').forEach(b => b.disabled = true);
-    // try {
-    //   await submitFn({ action, items });
-    //   notify(`${action === 'order' ? 'Order' : 'Sale'} submitted`, 'success');
-    // } catch (err) {
-    //   notify(err.message || 'Failed to submit', 'error');
-    // } finally {
-    //   form.querySelectorAll('button[type="submit"]').forEach(b => b.disabled = false);
-    // }
+    form.querySelectorAll('button[type="submit"]').forEach(b => b.disabled = true);
+    try {
+      await submitFn({ action, items });
+      notify(`${action === 'order' ? 'Order' : 'Sale'} submitted`, 'success');
+    } catch (err) {
+      notify(err.message || 'Failed to submit', 'error');
+    } finally {
+      form.querySelectorAll('button[type="submit"]').forEach(b => b.disabled = false);
+    }
   }
   form.addEventListener('submit', onSubmit);
   return () => form.removeEventListener('submit', onSubmit);

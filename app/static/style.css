@@ -28,8 +28,8 @@
 ========================= */
 body {
     font-family: "Segoe UI", Roboto, sans-serif;
-    background-color: #F5F5F5;
-    color: #212121;
+    background-color: var(--color-bg);
+    color: var(--color-text);
     margin: 0;
     padding: 0;
 }
@@ -57,7 +57,7 @@ img {
 }
 
 .card {
-    background-color: #fff;
+    background-color: var(--color-surface);
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     padding: 20px;
@@ -87,8 +87,8 @@ img {
 #login-section .btn {
     width: 100%;
     padding: 12px;
-    background-color: #5C6BC0;
-    color: #fff;
+    background-color: var(--color-primary);
+    color: var(--color-surface);
     border: none;
     border-radius: 8px;
     font-size: 16px;
@@ -97,7 +97,7 @@ img {
 }
 
 #login-section .btn:hover {
-    background-color: #3949AB;
+    background-color: var(--color-primary);
 }
 
 /* =========================
@@ -113,17 +113,17 @@ img {
 }
 
 .btn-primary {
-    background-color: #5C6BC0;
-    color: #fff;
+    background-color: var(--color-primary);
+    color: var(--color-surface);
 }
 
 .btn-primary:hover {
-    background-color: #3949AB;
+    background-color: var(--color-primary);
 }
 
 .btn-danger {
     background-color: #E53935;
-    color: #fff;
+    color: var(--color-surface);
 }
 
 .btn-danger:hover {
@@ -131,8 +131,8 @@ img {
 }
 
 .btn-accent {
-    background-color: #FFEB3B;
-    color: #212121;
+    background-color: var(--color-accent);
+    color: var(--color-text);
 }
 
 .btn-disabled {
@@ -152,12 +152,12 @@ img {
 .table th, .table td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .table th {
-    background-color: #5C6BC0;
-    color: #fff;
+    background-color: var(--color-primary);
+    color: var(--color-surface);
 }
 
 .table tr:nth-child(even) {
@@ -187,7 +187,7 @@ img {
 
 .logout-link {
   font-size: 14px;
-  color: #5C6BC0;
+  color: var(--color-primary);
   text-decoration: underline;
   cursor: pointer;
   margin-top: 2px;
@@ -228,7 +228,7 @@ img {
   padding: 10px;
   border-radius: 8px;
   background-color: #fafafa;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   transition: background 0.2s;
 }
 
@@ -241,7 +241,7 @@ img {
 }
 
 .grid-row .price {
-  color: #5C6BC0;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -261,12 +261,21 @@ img {
 /* =========================
    Error Box
 ========================= */
-.error-box {
-    background-color: #FFCDD2;
-    color: #B71C1C;
+.alert {
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 16px;
+    /* font-weight: 500; */
+}
+
+.error {
+    background-color: #FFCDD2;
+    color: #B71C1C;
+}
+
+.success {
+    background-color: #C8E6C9;
+    color: #1B5E20;
 }
 
 /* =========================
@@ -294,7 +303,7 @@ img {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--color-border);
 }
 
 .tab-link {
@@ -302,7 +311,7 @@ img {
   font-size: 14px;              /* match button font size */
   font-weight: 500;
   background: #f5f5f5;          /* soft neutral background */
-  color: #5C6BC0;               /* indigo text, matches your primary */
+  color: var(--color-primary);               /* indigo text, matches your primary */
   border: none;
   border-radius: 6px 6px 0 0;
   cursor: pointer;
@@ -314,8 +323,8 @@ img {
 }
 
 .tab-link.active {
-  background: #5C6BC0;          /* your primary indigo */
-  color: #fff;
+  background: var(--color-primary);          /* your primary indigo */
+  color: var(--color-surface);
   font-weight: 600;
 }
 
@@ -337,9 +346,9 @@ img {
 }
 
 .tab-link.active {
-  background: #5C6BC0;
+  background: var(--color-primary);
   background: #673ab7; /* purple 
-  color: #fff;
+  color: var(--color-surface);
 } */
 
 .tab-pane {

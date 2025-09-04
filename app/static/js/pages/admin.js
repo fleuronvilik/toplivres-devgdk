@@ -1,20 +1,22 @@
 import { $, show } from "../utils/dom.js";
 import { apiFetch, loadAdminOperations } from "../utils/api.js";
 import { delegate } from "../utils/events.js";
+import { bindAddBookForm } from "../features/addBookForm.js";
 
-let unbindAdmin = [];
+let unbindAdmin, unbindAddBook;
 
 export async function mountAdmin(loaded) {
     const root = $("#adminDashboard");
     const adminOpsTable = $("#adminOpsTable");
+    const addBookForm = $("#addBookForm");
     show(root);
     if (!loaded.adminOps) {
         await loadAdminOperations();
         loaded.adminOps = true;
     }
 
-    if (unbindAdmin.length === 0) {
-        unbindAdmin.push(
+    if (!unbindAdmin) {
+        unbindAdmin = (
             delegate(
                 adminOpsTable, 'click', 'button[data-action]', async (e) => {
                     const id = e.target.dataset.id;
@@ -28,9 +30,14 @@ export async function mountAdmin(loaded) {
             })
         )
     }
+
+    if (!unbindAddBook && addBookForm) unbindAddBook = bindAddBookForm(addBookForm);
 }
 
 export function unmountAdmin() {
-  unbindAdmin.forEach(off => off());
-  unbindAdmin = [];
+  unbindAdmin();
+  unbindAdmin = null;
+  unbindAddBook();
+  unbindAddBook = null;
+  $("#adminDashboard").classList.add("hidden");
 }
