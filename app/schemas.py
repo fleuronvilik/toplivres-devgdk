@@ -41,6 +41,27 @@ class UserSchema(SQLAlchemyAutoSchema):
     email = ma.fields.Email(required=True)
     password = ma.fields.String(required=True, load_only=True)
 
+
+class UserUpdateSchema(ma.Schema):
+    """Validation for profile updates from the authenticated user.
+    Only allows safe fields; all optional to support partial updates.
+    """
+    name = ma.fields.String(validate=ma.validate.Length(min=1, max=30))
+    email = ma.fields.Email()
+    store_name = ma.fields.String(validate=ma.validate.Length(max=30))
+    address = ma.fields.String(validate=ma.validate.Length(max=120))
+    phone = ma.fields.String(
+        validate=ma.validate.And(
+            ma.validate.Length(max=20),
+            ma.validate.Regexp(r"^[0-9+(). \-]*$", error="Invalid phone format")
+        )
+    )
+
+    @ma.validates_schema
+    def ensure_non_empty(self, data, **kwargs):
+        if not data:
+            raise ma.ValidationError("No fields provided for update.")
+
 class ItemSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = OperationItem

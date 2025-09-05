@@ -1,13 +1,15 @@
 from flask import Blueprint, jsonify, request, render_template, redirect, url_for
 from app.extensions import db
 from app.models import Book, Operation, OperationItem, User
-from app.schemas import BookSchema, OperationSchema, UserSchema
+from app.schemas import BookSchema, OperationSchema, UserSchema, UserUpdateSchema
 from app.utils.decorators import role_required
 from app.utils.helpers import error_response
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import aliased
 
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
+from marshmallow import ValidationError
+from sqlalchemy.exc import IntegrityError
 
 book_schema, books_schema = BookSchema(), BookSchema(many=True)
 
@@ -142,6 +144,34 @@ def get_inventory():
     ]
 
     return {"data": inventory}, 200
+
+
+@main_bp.route('/api/users', methods=['PUT'])
+@jwt_required()
+def update_current_user():
+    """Update the authenticated user's profile (partial updates allowed)."""
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return error_response("User not found", 404)
+
+    schema = UserUpdateSchema()
+    try:
+        payload = schema.load(request.get_json(silent=True) or {})
+    except ValidationError as err:
+        return error_response(err.messages, 400)
+
+    # Apply allowed fields only
+    for field, value in payload.items():
+        setattr(user, field, value)
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return error_response("Name or email already in use", 400)
+
+    return UserSchema().dump(user), 200
 
 
 @main_bp.route('/api/users/<int:id>/stats')
