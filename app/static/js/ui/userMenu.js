@@ -48,12 +48,19 @@ export function bindUserMenu(navRoot = $("#customer-navigation")) {
         form.name.value = me.name || '';
         form.email.value = me.email || '';
         if (form.phone) form.phone.value = me.phone || '';
-        // Track original for diffing
-        const original = { name: form.name.value, email: form.email.value, phone: form.phone?.value || '' };
+        // Helpers for diffing with trimmed values
+        const currentNormalized = () => ({
+          name: (form.name?.value || '').trim(),
+          email: (form.email?.value || '').trim(),
+          phone: (form.phone?.value || '').trim(),
+        });
+
+        // Track original for diffing (normalized)
+        const original = currentNormalized();
         form.dataset.original = JSON.stringify(original);
         // Enable save only when changed AND valid
         const computeDisabled = () => {
-          const current = { name: form.name.value, email: form.email.value, phone: form.phone?.value || '' };
+          const current = currentNormalized();
           const hasChanges = JSON.stringify(current) !== form.dataset.original;
           return !(hasChanges && form.checkValidity());
         };
@@ -86,7 +93,9 @@ export function bindUserMenu(navRoot = $("#customer-navigation")) {
       const original = JSON.parse(form.dataset.original || '{}');
       const fields = ['name','email','phone'];
       fields.forEach((f) => {
-        if (form[f] && form[f].value !== original[f]) payload[f] = form[f].value;
+        if (!form[f]) return;
+        const v = (form[f].value || '').trim();
+        if (v !== original[f]) payload[f] = v;
       });
       if (Object.keys(payload).length === 0) { hide(modal); return; }
       saveBtn.disabled = true;
