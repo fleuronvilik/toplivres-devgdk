@@ -571,7 +571,8 @@ img {
   right: 0;
   top: 56px;
   bottom: 0;
-  width: 520px; /* fixed width for non-responsive layout */
+  width: 520px;
+  /* fixed width for non-responsive layout */
   border-radius: 12px 0 0 0;
 }
 
@@ -624,10 +625,26 @@ img {
 }
 
 /* Settings modal polish (scoped) */
-#settings-modal .modal-content { display: flex; flex-direction: column; }
-#settings-modal .modal-body { flex: 1; overflow: auto; }
-#settings-modal .grid-form { display: grid; gap: 12px; }
-#settings-modal label { font-weight: 500; }
+#settings-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+}
+
+#settings-modal .modal-body {
+  flex: 1;
+  overflow: auto;
+}
+
+#settings-modal .grid-form {
+  display: grid;
+  gap: 12px;
+}
+
+#settings-modal label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
 #settings-modal input[type="text"],
 #settings-modal input[type="email"] {
   width: 100%;
@@ -636,7 +653,14 @@ img {
   border-radius: 8px;
   font-size: 14px;
 }
-#settings-modal input:focus-visible,
-#settings-modal button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-#settings-modal .modal-footer { justify-content: flex-end; gap: 8px; }
-#settings-modal #settings-save[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+
+#settings-modal .modal-footer {
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+#settings-modal #settings-save[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
