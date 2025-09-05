@@ -1,44 +1,44 @@
-import { $, show } from '../utils/dom.js';
+import { $, show, hide } from '../utils/dom.js';
+import { bindTabs } from '../ui/tabs.js';
 import { apiFetch, loadBooks, loadCustomerOrders, loadInventory, loadStats } from '../utils/api.js';
 import { delegate } from '../utils/events.js';
 import { bindOrderForm } from '../features/orderForm.js';
 
-let unbindHistory = [];
+let unbindHistory = [], unbindNavigation, unbindOrderForm;
 
 export async function mountCustomer(loaded) {
-  show($('#customerDashboard')); show($('#customerNavigation'));
+  show($('#customerDashboard')); show($('#customer-navigation'));
   const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
   const nameEl = $('#customer-name'); if (nameEl) nameEl.textContent = u.name || 'Customer';
   const formElt = $('#operationForm');
-  //let salesChart;
+  let salesChart;
 
   if (!loaded.custBooks)  { await loadBooks();          loaded.custBooks  = true; }
   if (!loaded.custOrders) { await loadCustomerOrders(); loaded.custOrders = true; }
   if (!loaded.inventory)  { await loadInventory();      loaded.inventory  = true; }
   if (!loaded.stats)      { await loadStats();          loaded.stats      = true; }
 
-  bindOrderForm(formElt, async function ({action, items}) {
-    console.log(action, items);
-    let data;
-    if (action === 'order') {
-      data = await apiFetch('/api/orders', {
-        method: 'POST',
-        body: JSON.stringify({items})
-      });
-      await loadCustomerOrders();
-    } else if (action === 'sale') {
-      data = await apiFetch('/api/sales', {
-        method: 'POST',
-        body: JSON.stringify({items})
-      });
-      await loadCustomerOrders();
-      await loadInventory();
-    }
-    alert('Operation submitted', data);
-  })
+  if (!unbindOrderForm && formElt) {
+    unbindOrderForm = bindOrderForm(formElt, async function ({action, items}) {
+      if (action === 'order') {
+        await apiFetch('/api/orders', {
+          method: 'POST',
+          body: JSON.stringify({items})
+        });
+        await loadCustomerOrders();
+      } else if (action === 'sale') {
+        await apiFetch('/api/sales', {
+          method: 'POST',
+          body: JSON.stringify({items})
+        });
+        await loadCustomerOrders();
+        await loadInventory();
+      }
+    })
+  }
 
   if (unbindHistory.length === 0) {
-    const customerHistory = $('#customerHistory');
+    const customerHistory = $('#history-tab');
     unbindHistory.push(
       delegate(
         customerHistory, 'click', 'button.cancelBtn', async (e) => {
@@ -60,52 +60,35 @@ export async function mountCustomer(loaded) {
     );
   }
 
-  // Tabs       
-
-  
-
-  document.querySelectorAll(".tab-link").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-link").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-
-      btn.classList.add("active");
-      document.getElementById(btn.dataset.tab).classList.add("active");
-    });
-  });
+  if (!unbindNavigation) {
+    const navElt = $('#customer-navigation');
+    const tabButtons = navElt ? navElt.querySelectorAll('.tab-link') : [];
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    unbindNavigation = bindTabs(tabButtons, tabPanes, { defaultTab: 'orders' });
+  }
 }
 
 export function unmountCustomer() {
+  unbindNavigation?.();
+  unbindNavigation = null;
   unbindHistory.forEach(off => off());
   unbindHistory = [];
+  unbindOrderForm();
+  unbindOrderForm = null;
+  hide($('#customerDashboard')); //).classList.add('hidden');
+  hide($('#customer-navigation')); //.classList.add('hidden');
 }
 
 export async function mountCustomerDetailForAdmin(loaded) {
   const root = document.querySelector('#customerDetail');
-  const nav = document.querySelector('#customerNavigation');
+  const nav = document.querySelector('#customer-navigation');
   if (nav) show(nav);
   show(root);
   if (!loaded.inventory) { await loadInventory(); loaded.inventory = true; }
   if (!loaded.stats) { await loadStats(); loaded.stats = true; }
 
-  // Activate Inventory tab by default
-  const allLinks = document.querySelectorAll('.tab-link');
-  const allPanes = document.querySelectorAll('.tab-pane');
-  allLinks.forEach(b => b.classList.remove('active'));
-  allPanes.forEach(p => p.classList.remove('active'));
-  const invBtn = document.querySelector('.tab-link[data-tab="customerInventory"]');
-  const invPane = document.getElementById('customerInventory');
-  if (invBtn) invBtn.classList.add('active');
-  if (invPane) invPane.classList.add('active');
-
-  // Tabs handler (duplicate of customer tabs setup)
-  document.querySelectorAll('.tab-link').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      const pane = document.getElementById(btn.dataset.tab);
-      if (pane) pane.classList.add('active');
-    });
-  });
+  // Bind tabs with default to inventory
+  const tabButtons = nav ? nav.querySelectorAll('.tab-link') : [];
+  const tabPanes = document.querySelectorAll('.tab-pane');
+  bindTabs(tabButtons, tabPanes, { defaultTab: 'inventory' });
 }

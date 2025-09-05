@@ -6,7 +6,7 @@ import { mountCustomer, mountCustomerDetailForAdmin } from '../pages/customer.js
 // cache elements once
 const adminDashboardElt     = $("#adminDashboard");
 const customerDashboardElt  = $("#customerDashboard");
-const customerNavigationElt = $("#customerNavigation");
+const customerNavigationElt = $("#customer-navigation");
 const customerDetailElt     = $("#customerDetail");
 const loginForm             = $("#loginForm");
 
@@ -31,6 +31,8 @@ function hideAll() {
   hide(adminDashboardElt);
   hide(customerDashboardElt);
   hide(customerNavigationElt);
+  hide($(".site-header"));
+  hide(customerDetailElt);
   if (loginForm) hide(loginForm.parentNode); // or wrapper
 }
 
@@ -95,4 +97,3 @@ export async function guardRouteAndRender() {
     return redirect('/', {hard:true});
   }
 }
-

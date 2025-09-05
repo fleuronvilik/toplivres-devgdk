@@ -29,8 +29,8 @@ export async function apiFetch(path, options = {}) {
         messages.forEach(msg => notify(`[${category}] ${msg}`, 'error'));
       }
     } else {
-      notify(data.msg || res.statusText, 'error');
-      logout(); // Token has expired or is invalid
+      // notify(data.msg || res.statusText, 'error');
+      logout(); // Token has expired or is invalid, don't spam with errors, logout
     }
     throw new Error("API Request failed"); //new Error(await res.text());
   }

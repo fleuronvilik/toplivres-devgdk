@@ -33,7 +33,7 @@ export function bindOrderForm(form, submitFn) {
       await submitFn({ action, items });
       notify(`${action === 'order' ? 'Order' : 'Sale'} submitted`, 'success');
     } catch (err) {
-      notify(err.message || 'Failed to submit', 'error');
+      // notify(err.message || 'Failed to submit', 'error');
     } finally {
       form.querySelectorAll('button[type="submit"]').forEach(b => b.disabled = false);
     }
