@@ -92,14 +92,22 @@ function decodeRole() {
   }
 }
 
-function viewItems(items) {
-  return function () {
-    itemsList = items.map(i => {
-      let qty = i.quantity
-      if (qty < 0) qty = -qty;
-      return `${qty}x ${i.book}`
-    })
-    alert(itemsList.join("\n"));
+function openItemSheetFallback(items) {
+  const sheet = document.getElementById('items-sheet');
+  const list = document.getElementById('items-sheet-list');
+  if (sheet && list) {
+    list.innerHTML = '';
+    items.forEach(i => {
+      const li = document.createElement('li');
+      const qty = i.quantity < 0 ? -i.quantity : i.quantity;
+      li.textContent = `${qty}× ${i.book || i.title || `Book #${i.book_id}`}`;
+      li.className = 'items-list-row';
+      list.appendChild(li);
+    });
+    sheet.classList.remove('hidden');
+    sheet.querySelectorAll('[data-dismiss]').forEach(el => el.addEventListener('click', () => sheet.classList.add('hidden'), { once: true }));
+  } else {
+    alert(items.map(i => `${(i.quantity<0?-i.quantity:i.quantity)}× ${i.book || i.title || `Book #${i.book_id}`}`).join('\n'));
   }
 }
 
@@ -204,7 +212,7 @@ async function loadCustomerOrders(typeFilter = "") {
       </td>
     `;
     tbody.appendChild(tr);
-    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", viewItems(op.items))
+    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", () => openItemSheetFallback(op.items))
   });
 
   // Attach cancel handlers
@@ -326,7 +334,7 @@ async function loadAdminOperations() {
       </td>
     `;
     tbody.appendChild(tr);
-    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", viewItems(op.items))
+    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", () => openItemSheetFallback(op.items))
   });
 }
 

@@ -1,4 +1,5 @@
 import { getToken, decodeRole } from "./dom.js";
+import { openItemsSheet } from "../ui/itemsSheet.js";
 import { notify } from "../core/notifications.js";
 
 // Generic fetch with error handling & auth
@@ -56,7 +57,7 @@ export async function loadAdminOperations() {
       </td>
     `;
     tbody.appendChild(tr);
-    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", viewItems(op.items))
+    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", () => openItemsSheet(op.items))
   });
 }
 
@@ -127,7 +128,7 @@ export async function loadCustomerOrders(typeFilter = "") {
       </td>
     `;
     tbody.appendChild(tr);
-    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", viewItems(op.items))
+    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", () => openItemsSheet(op.items))
   });
 }
 
@@ -197,13 +198,4 @@ function showError(message) {
   }
 }// missing helpers from /static/app.js needed here
 
-function viewItems(items) {
-  return function () {
-    const itemsList = items.map(i => {
-      let qty = i.quantity
-      if (qty < 0) qty = -qty;
-      return `${qty}x ${i.book}`
-    })
-    alert(itemsList.join("\n"));
-  }
-}
+// replaced by openItemsSheet()
