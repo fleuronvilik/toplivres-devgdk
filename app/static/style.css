@@ -49,6 +49,66 @@ img {
 }
 
 /* =========================
+   Global Header & Skip Link
+========================= */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 8px 12px;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  border-radius: 6px;
+  margin: 8px;
+}
+
+.site-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.site-header .brand,
+.site-header .top-nav {
+  display: flex;
+  align-items: center;
+}
+.site-header .brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.site-header .brand-name {
+  font-weight: 700;
+}
+.site-header .site-title {
+  position: absolute; /* keep it available for screen readers */
+  left: -9999px; 
+}
+.site-header .top-nav ul {
+  list-style: none;
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================
    Sections / Cards
 ========================= */
 .section {
@@ -358,6 +418,17 @@ img {
 .tab-pane.active {
   display: block;
 }
+
+/* Customer nav layout: tabs left, user actions right */
+#customer-navigation .nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#customer-navigation .tabs { flex: 1; }
+
+#customer-navigation .user-menu { margin-left: auto; }
 
 /* Filter Buttons (History sub-tabs) */
 .filter-buttons {
