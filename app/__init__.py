@@ -363,6 +363,14 @@ def register_error_handler(app):
         normalized = normalize_marshmallow_messages(err.messages)
         return error_response(normalized, 400)
 
+    @app.errorhandler(404)
+    def handle_not_found(err):
+        # Serve a friendly 404 page for unknown routes
+        try:
+            return render_template('404.html'), 404
+        except Exception:
+            return {"error": "Not found"}, 404
+
     
 def normalize_marshmallow_messages(messages):
     """
