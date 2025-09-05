@@ -1,20 +1,27 @@
-export function notify(message, type='success'){
+export function notify(message, type = 'success') {
   const host = document.getElementById('alerts');
-  /*
-  || (()=> {
-    const d=document.createElement('div'); d.id='alerts'; d.setAttribute('aria-live','polite');
-    d.style.position='fixed'; d.style.right='16px'; d.style.bottom='16px'; d.style.display='grid'; d.style.gap='8px'; d.style.zIndex='1000';
-    document.body.appendChild(d); return d;
-  })();
-  */
-  // const host = document.getElementById("errorBox");
-  if (host) {
-    const p = document.createElement("p");
-    p.textContent = message;
-    // p.style.color = "red";
-    host.appendChild(p);
-    host.classList.add("alert", type);
-    host.classList.remove("hidden");
-  }
-  // setTimeout(()=> host.classList.add("hidden"), 3000);
+  if (!host) return;
+
+  // Ensure container is visible
+  host.classList.remove('hidden');
+
+  // Build alert item with close button
+  const item = document.createElement('div');
+  item.className = `alert ${type}`;
+  const text = document.createElement('span');
+  text.textContent = message;
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'alert-close';
+  close.setAttribute('aria-label', 'Close alert');
+  close.textContent = '×';
+  close.addEventListener('click', () => {
+    item.remove();
+    // Hide host if empty
+    if (host.children.length === 0) host.classList.add('hidden');
+  });
+
+  item.appendChild(text);
+  item.appendChild(close);
+  host.appendChild(item);
 }

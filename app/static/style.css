@@ -339,6 +339,8 @@ img {
   border-radius: 8px;
   margin-bottom: 16px;
   /* font-weight: 500; */
+  display: flex;
+  align-items: flex-start;
 }
 
 .error {
@@ -349,6 +351,17 @@ img {
 .success {
   background-color: #C8E6C9;
   color: #1B5E20;
+}
+
+#alerts { display: grid; gap: 8px; }
+.alert .alert-close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 /* =========================
