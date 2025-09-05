@@ -82,7 +82,7 @@ function resolveTargetCustomerId() {
   const role = decodeRole();
   const current = JSON.parse(localStorage.getItem("currentUser") || "null");
   if (role === "admin") {
-    const detailRoot = document.getElementById("customerDetail");
+    const detailRoot = document.getElementById("customer-detail");
     const cid = detailRoot?.dataset?.customerId;
     if (cid) return cid;
   }
