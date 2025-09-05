@@ -1,10 +1,11 @@
 import { $, show, hide } from '../utils/dom.js';
 import { bindTabs } from '../ui/tabs.js';
+import { bindUserMenu } from '../ui/userMenu.js';
 import { apiFetch, loadBooks, loadCustomerOrders, loadInventory, loadStats } from '../utils/api.js';
 import { delegate } from '../utils/events.js';
 import { bindOrderForm } from '../features/orderForm.js';
 
-let unbindHistory = [], unbindNavigation, unbindOrderForm;
+let unbindHistory = [], unbindNavigation, unbindOrderForm, unbindUserMenu;
 
 export async function mountCustomer(loaded) {
   show($('#customer-dashboard')); show($('#customer-navigation'));
@@ -66,6 +67,10 @@ export async function mountCustomer(loaded) {
     const tabPanes = document.querySelectorAll('.tab-pane');
     unbindNavigation = bindTabs(tabButtons, tabPanes, { defaultTab: 'orders' });
   }
+
+  if (!unbindUserMenu) {
+    unbindUserMenu = bindUserMenu($('#customer-navigation'));
+  }
 }
 
 export function unmountCustomer() {
@@ -75,6 +80,8 @@ export function unmountCustomer() {
   unbindHistory = [];
   unbindOrderForm();
   unbindOrderForm = null;
+  unbindUserMenu?.();
+  unbindUserMenu = null;
   hide($('#customer-dashboard')); //).classList.add('hidden');
   hide($('#customer-navigation')); //.classList.add('hidden');
 }
@@ -91,4 +98,5 @@ export async function mountCustomerDetailForAdmin(loaded) {
   const tabButtons = nav ? nav.querySelectorAll('.tab-link') : [];
   const tabPanes = document.querySelectorAll('.tab-pane');
   bindTabs(tabButtons, tabPanes, { defaultTab: 'inventory' });
+  bindUserMenu($('#customer-navigation'));
 }

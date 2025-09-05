@@ -1,0 +1,30 @@
+<div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="modal-backdrop" data-dismiss></div>
+  <div class="modal-content">
+    <header class="modal-header">
+      <h3 id="settings-title">Settings</h3>
+      <button class="close-btn" type="button" data-dismiss aria-label="Close">×</button>
+    </header>
+    <div class="modal-body">
+      <form id="settings-form" class="grid-form">
+        <label>
+          Name
+          <input type="text" name="name" placeholder="Your name" />
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" placeholder="you@example.com" />
+        </label>
+        <label>
+          Phone (optional)
+          <input type="text" name="phone" placeholder="+123456789" />
+        </label>
+      </form>
+    </div>
+    <footer class="modal-footer">
+      <button class="btn" type="button" data-dismiss>Cancel</button>
+      <button class="btn btn-primary" type="button" id="settings-save" disabled>Save (placeholder)</button>
+    </footer>
+  </div>
+</div>
+
