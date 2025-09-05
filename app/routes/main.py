@@ -161,6 +161,36 @@ def update_current_user():
     except ValidationError as err:
         return error_response(err.messages, 400)
 
+    # Normalize: trim string fields; drop empty strings for partial updates
+    for k, v in list(payload.items()):
+        if isinstance(v, str):
+            v = v.strip()
+            if v == "":
+                payload.pop(k)
+                continue
+            payload[k] = v
+
+    # Case-insensitive uniqueness checks (avoid duplicates with different case)
+    if "name" in payload:
+        exists = (
+            User.query
+            .filter(func.lower(User.name) == payload["name"].lower())
+            .filter(User.id != user_id)
+            .first()
+        )
+        if exists:
+            return error_response("Name already in use", 400, "name")
+
+    if "email" in payload:
+        exists = (
+            User.query
+            .filter(func.lower(User.email) == payload["email"].lower())
+            .filter(User.id != user_id)
+            .first()
+        )
+        if exists:
+            return error_response("Email already in use", 400, "email")
+
     # Apply allowed fields only
     for field, value in payload.items():
         setattr(user, field, value)
