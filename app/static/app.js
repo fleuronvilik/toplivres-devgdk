@@ -1,6 +1,6 @@
 const loginForm = document.getElementById("loginForm");
-const customerDashboardElt = document.getElementById("customerDashboard");
-const adminDashboardElt = document.getElementById("adminDashboard");
+const customerDashboardElt = document.getElementById("customer-dashboard");
+const adminDashboardElt = document.getElementById("admin-dashboard");
 const customerNavigationElt = document.getElementById("customer-navigation");
 
 let currentUser;
@@ -29,7 +29,7 @@ function logout() {
 }
 
 function clearErrors() {
-  const box = document.getElementById("errorBox");
+  const box = document.getElementById("error-box");
   if (box) {
     box.classList.add("hidden");
     box.innerHTML = "";
@@ -39,7 +39,7 @@ function clearErrors() {
 function showError(message) {
   alert(message);  // quick immediate feedback
 
-  const box = document.getElementById("errorBox");
+  const box = document.getElementById("error-box");
   if (box) {
     const p = document.createElement("p");
     p.textContent = message;
@@ -166,7 +166,7 @@ renderPage()// document.addEventListener("DOMContentLoaded", renderPage);
 // === Customer ===
 async function loadBooks() {
   const books = await apiFetch("/api/books");
-  const container = document.getElementById("booksList");
+  const container = document.getElementById("books-list");
   container.innerHTML = "";
   books.data.forEach(b => {
     const row = document.createElement("div");
@@ -187,7 +187,7 @@ async function loadCustomerOrders(typeFilter = "") {
   // debugger
   if (loginForm) loginForm.parentNode.classList.add("hidden");
   const res = await apiFetch(`/api/operations?type=${typeFilter}`); // assumes Option A endpoints
-  const tbody = document.querySelector("#ordersTable tbody");
+  const tbody = document.querySelector("#orders-table tbody");
   tbody.innerHTML = "";
 
   res.data.forEach(op => {
@@ -267,7 +267,7 @@ async function loadInventory() {
 
 
 // Handle customer operations
-document.getElementById("operationForm")?.addEventListener("click", async (e) => {
+document.getElementById("operation-form")?.addEventListener("click", async (e) => {
   if (e.target.tagName !== "BUTTON") return;
   e.preventDefault();
   const action = e.target.dataset.action;
@@ -310,7 +310,7 @@ async function submitOperation(endpoint) {
 async function loadAdminOperations() {
   loginForm.parentNode.classList.add("hidden");
   const ops = await apiFetch("/api/admin/operations");
-  const tbody = document.getElementById("adminOpsTable").querySelector("tbody");
+  const tbody = document.getElementById("admin-ops-table").querySelector("tbody");
   tbody.innerHTML = "";
   ops.forEach(op => {
     const tr = document.createElement("tr");
@@ -331,7 +331,7 @@ async function loadAdminOperations() {
 }
 
 // Handle admin actions
-document.getElementById("adminOpsTable")?.addEventListener("click", async (e) => {
+document.getElementById("admin-ops-table")?.addEventListener("click", async (e) => {
   if (e.target.tagName !== "BUTTON") return;
   if (e.target.classList[0] == "viewItemsBtn") return;
   const id = e.target.dataset.id;
@@ -345,7 +345,7 @@ document.getElementById("adminOpsTable")?.addEventListener("click", async (e) =>
 });
 
 // Add book
-document.getElementById("addBookForm")?.addEventListener("submit", async (e) => {
+document.getElementById("add-book-form")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const title = e.target.title.value;
   const unit_price = parseFloat(e.target.unit_price.value);
@@ -379,7 +379,7 @@ async function loadStats() {
   // const { data } = await res.json();
 
   if (!salesChart) {
-    const ctx = document.getElementById("salesChart").getContext("2d");
+    const ctx = document.getElementById("sales-chart").getContext("2d");
     salesChart = new Chart(ctx, {
         type: "bar",
         data: {

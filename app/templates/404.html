@@ -1,0 +1,19 @@
+{# templates/404.html #}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Not found — TopLivres</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <!-- DO NOT include the preload guard or app.js here -->
+</head>
+<body>
+  <main class="card" style="max-width:640px;margin:64px auto;">
+      <h2 id="notfound-title">We can't find that page</h2>
+      <p>It might have been moved or the link is incorrect.</p>
+      <p>
+        <a class="btn btn-primary" href="/">Go to Home</a>
+      </p>
+      <p>Error code: 404</p>
+</body>
+</html>

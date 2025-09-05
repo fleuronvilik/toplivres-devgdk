@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Admin - Toplivres{% endblock %}
+{% block page_h1 %}Admin Dashboard{% endblock %}
 {% block content %}
 <!-- ADMIN DASHBOARD -->
-<div id="adminDashboard" class="hidden">
+<div id="admin-dashboard" class="hidden">
     <header>
         <h2>Admin</h2>
         <div id="alerts"></div>
@@ -10,7 +11,7 @@
 
     <!-- Add book form -->
     <div class="card">
-        <form id="addBookForm" class="dashboard-form">
+        <form id="add-book-form" class="dashboard-form">
         <h3>Add Book</h3>
         <input type="text" name="title" placeholder="Title" required>
         <input type="number" name="unit_price" placeholder="Price" step="0.01" required>
@@ -21,7 +22,7 @@
     <!-- Operations table -->
     <div class="card">
         <h3>All Operations</h3>
-        <table id="adminOpsTable" class="table">
+        <table id="admin-ops-table" class="table">
         <thead>
             <tr>
             <th>ID</th>

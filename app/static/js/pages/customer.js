@@ -7,10 +7,10 @@ import { bindOrderForm } from '../features/orderForm.js';
 let unbindHistory = [], unbindNavigation, unbindOrderForm;
 
 export async function mountCustomer(loaded) {
-  show($('#customerDashboard')); show($('#customer-navigation'));
+  show($('#customer-dashboard')); show($('#customer-navigation'));
   const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
   const nameEl = $('#customer-name'); if (nameEl) nameEl.textContent = u.name || 'Customer';
-  const formElt = $('#operationForm');
+  const formElt = $('#operation-form');
   let salesChart;
 
   if (!loaded.custBooks)  { await loadBooks();          loaded.custBooks  = true; }
@@ -75,12 +75,12 @@ export function unmountCustomer() {
   unbindHistory = [];
   unbindOrderForm();
   unbindOrderForm = null;
-  hide($('#customerDashboard')); //).classList.add('hidden');
+  hide($('#customer-dashboard')); //).classList.add('hidden');
   hide($('#customer-navigation')); //.classList.add('hidden');
 }
 
 export async function mountCustomerDetailForAdmin(loaded) {
-  const root = document.querySelector('#customerDetail');
+  const root = document.querySelector('#customer-detail');
   const nav = document.querySelector('#customer-navigation');
   if (nav) show(nav);
   show(root);

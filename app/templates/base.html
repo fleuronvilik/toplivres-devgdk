@@ -25,8 +25,30 @@
 </head>
 
   <body>
-    <main class="container">
-        <div id="login-section">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!--
+    <header class="site-header" role="banner" class="hidden">
+      <div class="brand">
+        <a href="/" class="brand-link" aria-label="TopLivres home">
+           Simple text logo; replace with an image if desired
+          <span aria-hidden="true">📚</span>
+          
+          <span class="brand-name">TopLivres</span>
+        </a>
+      </div>
+      
+      <h1 class="site-title">{% block page_h1 %}TopLivres{% endblock %}</h1>
+      <nav class="top-nav" aria-label="Primary">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><button id="logoutLink" class="logout-link" type="button">Logout</button></li>
+        </ul>
+      </nav>
+      <button id="logoutLink" class="logout-link" type="button">Logout</button>
+    </header> -->
+
+    <main id="main" class="container" tabindex="-1">
+        <div id="login-section" class="hidden">
             <form id="loginForm" class="card">
                 <label>Email: <input type="email" name="email" required></label>
                 <label>Password: <input type="password" name="password" required></label>
@@ -43,5 +65,21 @@
       {% endblock %}
     </div>
     -->
+    <script>
+      // Lightweight client-side logout: clear session and return to login
+      (function(){
+        const link = document.getElementById('logoutLink');
+        if (link) {
+          link.addEventListener('click', function(){
+            try {
+              localStorage.removeItem('token');
+              localStorage.removeItem('currentUser');
+            } catch (e) {}
+            // Redirect to home; router/login will take over
+            location.assign('/');
+          });
+        }
+      })();
+    </script>
   </body>
 </html>

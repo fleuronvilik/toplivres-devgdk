@@ -6,9 +6,9 @@ import { bindAddBookForm } from "../features/addBookForm.js";
 let unbindAdmin, unbindAddBook;
 
 export async function mountAdmin(loaded) {
-    const root = $("#adminDashboard");
-    const adminOpsTable = $("#adminOpsTable");
-    const addBookForm = $("#addBookForm");
+    const root = $("#admin-dashboard");
+    const adminOpsTable = $("#admin-ops-table");
+    const addBookForm = $("#add-book-form");
     show(root);
     if (!loaded.adminOps) {
         await loadAdminOperations();
@@ -39,5 +39,5 @@ export function unmountAdmin() {
   unbindAdmin = null;
   unbindAddBook();
   unbindAddBook = null;
-  $("#adminDashboard").classList.add("hidden");
+  $("#admin-dashboard").classList.add("hidden");
 }

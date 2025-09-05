@@ -4,10 +4,10 @@ import { mountAdmin } from '../pages/admin.js';
 import { mountCustomer, mountCustomerDetailForAdmin } from '../pages/customer.js';
 
 // cache elements once
-const adminDashboardElt     = $("#adminDashboard");
-const customerDashboardElt  = $("#customerDashboard");
+const adminDashboardElt     = $("#admin-dashboard");
+const customerDashboardElt  = $("#customer-dashboard");
 const customerNavigationElt = $("#customer-navigation");
-const customerDetailElt     = $("#customerDetail");
+const customerDetailElt     = $("#customer-detail");
 const loginForm             = $("#loginForm");
 
 // use flags so you don't reload data twice

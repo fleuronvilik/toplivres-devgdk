@@ -40,7 +40,7 @@ export async function apiFetch(path, options = {}) {
 export async function loadAdminOperations() {
   // loginForm.parentNode.classList.add("hidden");
   const ops = await apiFetch("/api/admin/operations");
-  const tbody = document.getElementById("adminOpsTable").querySelector("tbody");
+  const tbody = document.getElementById("admin-ops-table").querySelector("tbody");
   tbody.innerHTML = "";
   ops.forEach(op => {
     const tr = document.createElement("tr");
@@ -62,7 +62,7 @@ export async function loadAdminOperations() {
 
 export async function loadBooks() {
   const books = await apiFetch("/api/books");
-  const container = document.getElementById("booksList");
+  const container = document.getElementById("books-list");
   container.innerHTML = "";
   books.data.forEach(b => {
     const row = document.createElement("div");
@@ -110,7 +110,7 @@ export async function loadInventory() {
 export async function loadCustomerOrders(typeFilter = "") {
   // if (loginForm) loginForm.parentNode.classList.add("hidden");
   const res = await apiFetch(`/api/operations?type=${typeFilter}`); // assumes Option A endpoints
-  const tbody = document.querySelector("#ordersTable tbody");
+  const tbody = document.querySelector("#orders-table tbody");
   tbody.innerHTML = "";
 
   res.data.forEach(op => {
@@ -137,7 +137,7 @@ export async function loadStats(salesChart) {
   const data = res.data;
 
   if (!salesChart) {
-    const ctx = document.getElementById("salesChart").getContext("2d");
+    const ctx = document.getElementById("sales-chart").getContext("2d");
     salesChart = new Chart(ctx, {
         type: "bar",
         data: {
@@ -187,7 +187,7 @@ function clearErrors() {
 function showError(message) {
   alert(message);  // quick immediate feedback
 
-  const box = document.getElementById("errorBox");
+  const box = document.getElementById("error-box");
   if (box) {
     const p = document.createElement("p");
     p.textContent = message;
