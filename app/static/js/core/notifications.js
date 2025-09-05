@@ -3,13 +3,13 @@ export function notify(message, type = 'success') {
   if (!host) return;
 
   // Ensure container is visible
-  host.classList.remove('hidden');
+  host.classList.add('grid');
   // Clean up any legacy classes from previous implementation
-  host.classList.remove('alert', 'error', 'success', 'warning', 'info');
+  // host.classList.remove('alert', 'error', 'success', 'warning', 'info');
 
   // Build alert item with close button
-  const item = document.createElement('p');
-  item.className = `alert ${type}`;
+  const item = document.createElement('div');
+  host.className = `alert ${type}`; // item.className = `alert ${type}`;
   const text = document.createElement('span');
   text.textContent = message;
   const close = document.createElement('button');

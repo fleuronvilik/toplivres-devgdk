@@ -334,29 +334,31 @@ img {
 /* =========================
    Error Box
 ========================= */
-.alert {
+#alerts {
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 16px;
-  /* font-weight: 500; */
+}
+
+.alert div {
   display: flex;
   align-items: flex-start;
+  margin: 1em 0;
 }
 
 /* Ensure item padding even if other rules collide */
-#alerts .alert { padding: 12px 16px; }
-
-.error {
+/* .alert { padding: 12px 16px; } */
+.alert.error {
   background-color: #FFCDD2;
   color: #B71C1C;
 }
 
-.success {
+.alert.success {
   background-color: #C8E6C9;
   color: #1B5E20;
 }
 
-#alerts { display: grid; gap: 8px; }
+
 .alert .alert-close {
   margin-left: auto;
   background: transparent;
@@ -665,13 +667,21 @@ img {
 #settings-modal input[type="email"] {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ccc; /* match admin inputs */
+  border: 1px solid #ccc;
+  /* match admin inputs */
   border-radius: 8px;
   font-size: 14px;
 }
 
-#settings-modal label { font-weight: 500; display: block; }
-#settings-modal label input { display: block; margin-top: 6px; }
+#settings-modal label {
+  font-weight: 500;
+  display: block;
+}
+
+#settings-modal label input {
+  display: block;
+  margin-top: 6px;
+}
 
 
 #settings-modal .modal-footer {
