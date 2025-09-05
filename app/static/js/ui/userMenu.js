@@ -1,4 +1,6 @@
 import { $, show, hide } from "../utils/dom.js";
+import { apiFetch } from "../utils/api.js";
+import { notify } from "../core/notifications.js";
 
 export function bindUserMenu(navRoot = $("#customer-navigation")) {
   if (!navRoot) return () => {};
@@ -35,7 +37,32 @@ export function bindUserMenu(navRoot = $("#customer-navigation")) {
   const unbinds = [() => toggle.removeEventListener('click', onToggle)];
 
   if (settingsBtn && modal) {
-    const openSettings = (e) => { e.preventDefault(); closeMenu(); hideDropdownFocus(); show(modal); };
+    const openSettings = async (e) => {
+      e.preventDefault();
+      closeMenu(); hideDropdownFocus();
+      // Prefill form with current user
+      try {
+        const me = await apiFetch('/api/users/me');
+        const form = modal.querySelector('#settings-form');
+        const saveBtn = modal.querySelector('#settings-save');
+        form.name.value = me.name || '';
+        form.email.value = me.email || '';
+        if (form.phone) form.phone.value = me.phone || '';
+        // Track original for diffing
+        const original = { name: form.name.value, email: form.email.value, phone: form.phone?.value || '' };
+        form.dataset.original = JSON.stringify(original);
+        saveBtn.disabled = true;
+        // Enable save on change
+        const onInput = () => {
+          const current = { name: form.name.value, email: form.email.value, phone: form.phone?.value || '' };
+          saveBtn.disabled = JSON.stringify(current) === form.dataset.original;
+        };
+        form.addEventListener('input', onInput, { once: true }); // first change enables, no heavy validation now
+      } catch (e) {
+        notify('Unable to load profile', 'error');
+      }
+      show(modal);
+    };
     const hideDropdownFocus = () => settingsBtn.blur();
     settingsBtn.addEventListener('click', openSettings);
     unbinds.push(() => settingsBtn.removeEventListener('click', openSettings));
@@ -45,10 +72,40 @@ export function bindUserMenu(navRoot = $("#customer-navigation")) {
     const onDismiss = (e) => { e.preventDefault(); hide(modal); };
     dismissers.forEach(el => el.addEventListener('click', onDismiss));
     unbinds.push(() => dismissers.forEach(el => el.removeEventListener('click', onDismiss)));
+
+    // Save handler
+    const onSave = async (e) => {
+      e.preventDefault();
+      const form = modal.querySelector('#settings-form');
+      const saveBtn = modal.querySelector('#settings-save');
+      const payload = {};
+      const original = JSON.parse(form.dataset.original || '{}');
+      const fields = ['name','email','phone'];
+      fields.forEach((f) => {
+        if (form[f] && form[f].value !== original[f]) payload[f] = form[f].value;
+      });
+      if (Object.keys(payload).length === 0) { hide(modal); return; }
+      saveBtn.disabled = true;
+      try {
+        const updated = await apiFetch('/api/users', { method: 'PUT', body: JSON.stringify(payload) });
+        // Persist locally for SPA usage
+        try { localStorage.setItem('currentUser', JSON.stringify(updated)); } catch {}
+        // Update greeting if present
+        const nameEl = document.getElementById('customer-name');
+        if (nameEl && updated.name) nameEl.textContent = updated.name;
+        notify('Profile updated');
+        hide(modal);
+      } catch (err) {
+        notify('Update failed', 'error');
+        saveBtn.disabled = false;
+      }
+    };
+    const saveBtn = modal.querySelector('#settings-save');
+    saveBtn?.addEventListener('click', onSave);
+    unbinds.push(() => saveBtn?.removeEventListener('click', onSave));
   }
 
   // logoutBtn is handled globally in base.html script; no binding needed here
 
   return () => unbinds.forEach(fn => fn());
 }
-
