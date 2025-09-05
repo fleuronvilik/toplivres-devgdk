@@ -43,7 +43,6 @@ img {
 
 .container {
   max-width: 1200px;
-  min-height: 100vh;
   margin: 0 auto;
   padding: 20px;
 }
@@ -570,9 +569,8 @@ img {
 .modal.sheet .modal-content {
   position: fixed;
   right: 0;
-  top: 12px;
+  top: 56px;
   bottom: 0;
-  height: auto;
   width: 520px; /* fixed width for non-responsive layout */
   border-radius: 12px 0 0 0;
 }
@@ -624,3 +622,21 @@ img {
   color: var(--color-surface);
   border-color: var(--color-primary);
 }
+
+/* Settings modal polish (scoped) */
+#settings-modal .modal-content { display: flex; flex-direction: column; }
+#settings-modal .modal-body { flex: 1; overflow: auto; }
+#settings-modal .grid-form { display: grid; gap: 12px; }
+#settings-modal label { font-weight: 500; }
+#settings-modal input[type="text"],
+#settings-modal input[type="email"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+}
+#settings-modal input:focus-visible,
+#settings-modal button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+#settings-modal .modal-footer { justify-content: flex-end; gap: 8px; }
+#settings-modal #settings-save[disabled] { opacity: 0.6; cursor: not-allowed; }
