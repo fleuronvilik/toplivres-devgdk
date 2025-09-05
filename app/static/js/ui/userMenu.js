@@ -51,13 +51,16 @@ export function bindUserMenu(navRoot = $("#customer-navigation")) {
         // Track original for diffing
         const original = { name: form.name.value, email: form.email.value, phone: form.phone?.value || '' };
         form.dataset.original = JSON.stringify(original);
-        saveBtn.disabled = true;
-        // Enable save on change
-        const onInput = () => {
+        // Enable save only when changed AND valid
+        const computeDisabled = () => {
           const current = { name: form.name.value, email: form.email.value, phone: form.phone?.value || '' };
-          saveBtn.disabled = JSON.stringify(current) === form.dataset.original;
+          const hasChanges = JSON.stringify(current) !== form.dataset.original;
+          return !(hasChanges && form.checkValidity());
         };
-        form.addEventListener('input', onInput, { once: true }); // first change enables, no heavy validation now
+        const onInput = () => { saveBtn.disabled = computeDisabled(); };
+        saveBtn.disabled = computeDisabled();
+        form.addEventListener('input', onInput);
+        unbinds.push(() => form.removeEventListener('input', onInput));
       } catch (e) {
         notify('Unable to load profile', 'error');
       }
@@ -78,6 +81,7 @@ export function bindUserMenu(navRoot = $("#customer-navigation")) {
       e.preventDefault();
       const form = modal.querySelector('#settings-form');
       const saveBtn = modal.querySelector('#settings-save');
+      if (!form.reportValidity()) return; // native validation messages
       const payload = {};
       const original = JSON.parse(form.dataset.original || '{}');
       const fields = ['name','email','phone'];

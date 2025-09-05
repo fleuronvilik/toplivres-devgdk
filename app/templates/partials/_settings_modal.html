@@ -6,18 +6,18 @@
       <button class="close-btn" type="button" data-dismiss aria-label="Close">×</button>
     </header>
     <div class="modal-body">
-      <form id="settings-form" class="grid-form">
+      <form id="settings-form" class="grid-form" novalidate>
         <label>
           Name
-          <input type="text" name="name" placeholder="Your name" />
+          <input type="text" name="name" placeholder="Your name" minlength="1" maxlength="30" />
         </label>
         <label>
           Email
-          <input type="email" name="email" placeholder="you@example.com" />
+          <input type="email" name="email" placeholder="you@example.com" maxlength="50" />
         </label>
         <label>
           Phone (optional)
-          <input type="text" name="phone" placeholder="+123456789" />
+          <input type="text" name="phone" placeholder="+123456789" inputmode="tel" maxlength="20" pattern="^[0-9+(). \\-]*$" title="Digits and + ( ) . - spaces only" />
         </label>
       </form>
     </div>
@@ -27,4 +27,3 @@
     </footer>
   </div>
 </div>
-
