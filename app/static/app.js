@@ -1,7 +1,7 @@
 const loginForm = document.getElementById("loginForm");
 const customerDashboardElt = document.getElementById("customerDashboard");
 const adminDashboardElt = document.getElementById("adminDashboard");
-const customerNavigationElt = document.getElementById("customerNavigation");
+const customerNavigationElt = document.getElementById("customer-navigation");
 
 let currentUser;
 let salesChart; // persist chart instance for updates
@@ -220,7 +220,7 @@ async function loadCustomerOrders(typeFilter = "") {
 }
 
 // Attach filter handlers
-document.querySelectorAll("#customerHistory .btn").forEach(btn => {
+document.querySelectorAll("#history-tab .filter-btn").forEach(btn => {
   btn.addEventListener("click", (e) => {
     document.querySelector("header .btn-accent").classList.remove("btn-accent");
     e.target.classList.add("btn-accent");
@@ -234,7 +234,9 @@ document.querySelectorAll(".tab-link").forEach(btn => {
     document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
 
     btn.classList.add("active");
-    document.getElementById(btn.dataset.tab).classList.add("active");
+    const paneId = `${btn.dataset.tab}-tab`;
+    const pane = document.getElementById(paneId);
+    if (pane) pane.classList.add("active");
   });
 });
 
