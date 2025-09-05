@@ -343,6 +343,9 @@ img {
   align-items: flex-start;
 }
 
+/* Ensure item padding even if other rules collide */
+#alerts .alert { padding: 12px 16px; }
+
 .error {
   background-color: #FFCDD2;
   color: #B71C1C;

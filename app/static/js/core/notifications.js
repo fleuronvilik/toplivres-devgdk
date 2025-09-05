@@ -4,9 +4,11 @@ export function notify(message, type = 'success') {
 
   // Ensure container is visible
   host.classList.remove('hidden');
+  // Clean up any legacy classes from previous implementation
+  host.classList.remove('alert', 'error', 'success', 'warning', 'info');
 
   // Build alert item with close button
-  const item = document.createElement('div');
+  const item = document.createElement('p');
   item.className = `alert ${type}`;
   const text = document.createElement('span');
   text.textContent = message;
