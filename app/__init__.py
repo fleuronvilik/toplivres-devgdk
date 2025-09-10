@@ -420,6 +420,9 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
     jwt.init_app(app)
 
+    from .cli_seed import seed_command
+    app.cli.add_command(seed_command)
+
     register_error_handler(app)
 
     @app.before_request
