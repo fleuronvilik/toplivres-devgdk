@@ -249,9 +249,16 @@ def get_user_stats(id):
         .scalar()
     )
 
-    delivery_ratio = (
-        round(total_delivered / total_sales, 2) if total_sales > 0 else None
-    )
+    if total_delivered is None:
+        delivery_ratio = 1
+        total_delivered = 0
+    elif total_sales is None:
+        delivery_ratio = 0
+        total_sales = 0
+    else:
+        delivery_ratio = (
+            round(total_sales / total_delivered, 2) if total_delivered > 0 else None
+        )
     
     result = {
         "id": row.id,
