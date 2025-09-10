@@ -1,4 +1,4 @@
-import { getToken, decodeRole } from "./dom.js";
+import { $, getCSRF, decodeRole } from "./dom.js";
 import { openItemsSheet } from "../ui/itemsSheet.js";
 import { notify } from "../core/notifications.js";
 
@@ -7,13 +7,19 @@ import { notify } from "../core/notifications.js";
 
 export async function apiFetch(path, options = {}) {
   clearErrors();
-  const token = getToken();
+
+  const method = (options.method || "GET").toUpperCase();
+  const needsCSRF = ["POST","PUT","PATCH","DELETE"].includes(method);
+  //const token = getToken();
   const res = await fetch(path, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-      ...options.headers,
+      "Accept": "application/json",
+      ...(typeof options.body === "string" ? { "Content-Type": "application/json" } : {}),
+      "X-CSRF-TOKEN": getCSRF(),
+      //...(needsCSRF ? { "X-CSRF-TOKEN": getCSRF() } : {}),
+      // ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
     }
   });
 
@@ -30,8 +36,8 @@ export async function apiFetch(path, options = {}) {
         messages.forEach(msg => notify(`[${category}] ${msg}`, 'error'));
       }
     } else {
-      // notify(data.msg || res.statusText, 'error');
-      logout(); // Token has expired or is invalid, don't spam with errors, logout
+      notify(data.msg || res.statusText, 'error');
+      // logout(); // Token has expired or is invalid, don't spam with errors, logout
     }
     throw new Error("API Request failed"); //new Error(await res.text());
   }
@@ -80,13 +86,14 @@ export async function loadBooks() {
 }
 
 function resolveTargetCustomerId() {
-  const role = decodeRole();
+  const role = $("main.container").dataset.role; // decodeRole();
   const current = JSON.parse(localStorage.getItem("currentUser") || "null");
   if (role === "admin") {
     const detailRoot = document.getElementById("customer-detail");
     const cid = detailRoot?.dataset?.customerId;
     if (cid) return cid;
   }
+  console.log(current)
   return current?.id;
 }
 

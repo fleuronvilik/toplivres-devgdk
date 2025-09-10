@@ -7,7 +7,7 @@ from app.utils.helpers import error_response
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import aliased
 
-from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity, decode_token
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
 
@@ -15,13 +15,17 @@ book_schema, books_schema = BookSchema(), BookSchema(many=True)
 
 main_bp = Blueprint('main', __name__)
 
-from datetime import date
 
 
 # -------------------------
-# CORE BUSINESS
+# SSR-first
 # -------------------------
-
+def current_user():
+    token = request.cookies.get("access_token_cookie")
+    if not token:
+        return None
+    print(decode_token(token))
+    return User.query.get(decode_token(token)["sub"])
 
 # -------------------------
 # ORDERS (request 4 delivery) and SALES REPORT
@@ -100,7 +104,7 @@ from datetime import date
 # -------------------------
 @main_bp.route('/api/users/me')
 @jwt_required()
-def cancel():
+def user_info():
     schema = UserSchema()
     current_user = User.query.get(get_jwt_identity())
     return schema.dump(current_user), 200
@@ -309,16 +313,28 @@ def show_book(book_id):
 # -------------------------
 @main_bp.route("/")
 def customer_self():
-    return render_template("customer.html")
+    user = current_user()
+    if not user:
+        return render_template("customer.html", role="")
+    if user.role == "customer":
+        return render_template("customer.html", role="customer", customer_id=user.id, customer_name=user.name)
+    else:
+        return redirect(url_for("main.admin"))
 
 @main_bp.route("/admin")
 def admin():
-    return render_template("admin.html")
+    user = current_user()
+    if not user:
+        return render_template("admin.html", role="")
+    if user.role == "customer":
+        return redirect(url_for("main.customer_self"))
+    return render_template("admin.html", role="admin")
 
 @main_bp.route("/admin/users/<int:id>")
-def customer_detail_admin(id):
+def admin_user_detail(id):
     # Template is empty shell; data comes via JS fetches
-    customer = db.session.get(User, id)
-    if not customer or customer.role != "customer":
-        return redirect(url_for("main.admin"))
-    return render_template("customer_detail.html", customer_id=id, customer_name=customer.name)
+    user = current_user()
+    if not user or user.role == "customer":
+        return redirect(url_for("main.customer_self"))
+    customer = User.query.get(id)
+    return render_template("customer_detail.html", role="admin", customer=customer)

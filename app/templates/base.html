@@ -3,22 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <!-- put this at the TOP of <head> on every shell -->
-    <style id="preload-guard">html{opacity:0}</style>
-    <script>
-    (function(){
-      try{
-        var t = localStorage.getItem('token');
-        var role = t ? JSON.parse(atob(t.split('.')[1])).role : null;
-        var p = location.pathname;
-        if (role==='admin' && p === '/') { location.replace('/admin'); return; }
-        if (role==='customer' && (p === '/admin' || p.startsWith('/users/'))) { location.replace('/'); return; }
-      }catch(e){}
-      var s=document.getElementById('preload-guard'); if(s) s.remove();
-    })();
-    </script>
-
     <title>{% block title %}{% endblock %}</title>
     <script type="module" src="{{ url_for('static', filename='js/app.js') }}" defer></script>
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
@@ -26,7 +10,8 @@
 
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
-    <main id="main" class="container" tabindex="-1">
+    <main id="main" class="container" tabindex="-1" data-role="{{ role }}">
+        {% if not role %}
         <div id="login-section" class="hidden">
             <form id="loginForm" class="card">
                 <label>Email: <input type="email" name="email" required></label>
@@ -34,22 +19,31 @@
                 <button type="submit" class="btn btn-submit">Login</button>
             </form>
         </div>
+        {% else %}
         {% block content %}{% endblock %}
+        {% endif %}
     </main>
-    <script>
-      // Lightweight client-side logout: clear session and return to login
+    <script type="module">
+      // Global logout: call API to unset cookies, then clear local state
+      import { apiFetch } from "{{ url_for('static', filename='js/utils/api.js') }}";
       (function(){
         const link = document.getElementById('logoutLink');
-        if (link) {
-          link.addEventListener('click', function(){
+        if (!link) return;
+        link.addEventListener('click', async function(e){
+          e.preventDefault();
+          try {
+            await apiFetch('/api/auth/logout');
+          } catch (err) {
+            // Even if the request fails, proceed with client cleanup
+          } finally {
             try {
               localStorage.removeItem('token');
               localStorage.removeItem('currentUser');
             } catch (e) {}
             // Redirect to home; router/login will take over
             location.assign('/');
-          });
-        }
+          }
+        });
       })();
     </script>
   </body>

@@ -44,4 +44,9 @@ export function getUserRole() {
   }
 }
 
+export function getCSRF() {
+  const m = document.cookie.match(/(?:^|;\s*)csrf_access_token=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
 

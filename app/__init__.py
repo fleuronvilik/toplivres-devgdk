@@ -405,6 +405,13 @@ def create_app(test_config=None):
     app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///app.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+    app.config.update(
+        JWT_TOKEN_LOCATION=["headers", "cookies"],  # accept both
+        JWT_COOKIE_SECURE=False,                     # True in prod (HTTPS)
+        JWT_COOKIE_SAMESITE="Lax",
+        JWT_COOKIE_CSRF_PROTECT=True,               # enables CSRF double-submit
+        JWT_CSRF_IN_COOKIES=True,                  # store CSRF token in a cookie
+    )
 
     if test_config:
         app.config.update(test_config)

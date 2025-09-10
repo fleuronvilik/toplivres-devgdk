@@ -1,5 +1,5 @@
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token
+from flask import Blueprint, jsonify, request, make_response
+from flask_jwt_extended import create_access_token, set_access_cookies, unset_access_cookies
 from werkzeug.security import generate_password_hash
 from app.extensions import db
 from app.models import User
@@ -60,4 +60,13 @@ def login():
         additional_claims={"role": user.role},
         expires_delta=timedelta(hours=6)
     )
-    return jsonify({"access_token": token})
+
+    resp = make_response(jsonify({"access_token": token}))
+    set_access_cookies(resp, token, max_age=6*3600)
+    return resp
+
+@auth_bp.route('/logout')
+def logout():
+    resp = make_response(jsonify({"msg": "logout successful"}))
+    unset_access_cookies(resp)
+    return resp, 200

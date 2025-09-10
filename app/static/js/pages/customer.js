@@ -21,6 +21,7 @@ export async function mountCustomer(loaded) {
 
   if (!unbindOrderForm && formElt) {
     unbindOrderForm = bindOrderForm(formElt, async function ({action, items}) {
+      console.count('orderForm:submit')
       if (action === 'order') {
         await apiFetch('/api/orders', {
           method: 'POST',

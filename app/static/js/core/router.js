@@ -1,4 +1,4 @@
-import { $, show, hide, redirect, getToken, decodeRole } from '../utils/dom.js';
+import { $, show, hide, redirect, getCSRF, decodeRole } from '../utils/dom.js';
 import { apiFetch } from '../utils/api.js';
 import { mountAdmin } from '../pages/admin.js';
 import { mountCustomer, mountCustomerDetailForAdmin } from '../pages/customer.js';
@@ -52,14 +52,19 @@ function renderLoginOnly() {
     try {
       const data = await apiFetch("/api/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
       // Expect backend returns { token: "..." }
-      localStorage.setItem("token", data.access_token);
+      // localStorage.setItem("token", data.access_token);
 
       const userData = await apiFetch("/api/users/me");
       localStorage.setItem("currentUser", JSON.stringify(userData));
-      guardRouteAndRender();
+      // redirect('/', {hard:true}); //
+      // guardRouteAndRender();
+      location.replace(location.pathname); // hard reload without cache
     } catch (err) {
       console.error(err);
     }
@@ -76,24 +81,24 @@ function navigate(path, opts) {
 }
 
 export async function guardRouteAndRender() {
-  const role = decodeRole();
+  // const role = $("main.container").dataset.role; //decodeRole();
   const page = getPageKind();
+  // debugger
+  // if (!role) return renderLoginOnly();
 
-  if (!role) return renderLoginOnly();
-
-  if (role === 'admin') {
-    if (page === 'customer') return navigate('/admin', {hard:true});
-  } else {
-    if (page === 'admin' || page === 'customer-detail') return navigate('/', {hard:true});
-  }
+  // if (role === 'admin') {
+  //   if (page === 'customer') return navigate('/admin', {hard:true});
+  // } else {
+  //   if (page === 'admin' || page === 'customer-detail') return navigate('/', {hard:true});
+  // }
 
   hideAll();
-  if (role === 'admin') {
-    if (page === 'admin') return mountAdmin(loaded);
-    if (page === 'customer-detail') return mountCustomerDetailForAdmin(loaded);
-    return redirect('/admin', {hard:true});
-  } else {
-    if (page === 'customer') return mountCustomer(loaded);
-    return redirect('/', {hard:true});
-  }
+  //if (role === 'admin') {
+  if (page === 'admin') return mountAdmin(loaded);
+  if (page === 'customer-detail') return mountCustomerDetailForAdmin(loaded);
+  // return redirect('/admin', {hard:true});
+  //  } else {
+  if (page === 'customer') return mountCustomer(loaded);
+  renderLoginOnly();
+  // }
 }
