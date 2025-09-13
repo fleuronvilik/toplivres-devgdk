@@ -2,8 +2,9 @@ import os
 import uuid
 import json
 import logging
+import time
 
-from flask import Flask, send_from_directory, g, render_template
+from flask import Flask, send_from_directory, g, render_template, request
 from flask_migrate import Migrate
 from marshmallow import ValidationError
 from dotenv import load_dotenv
@@ -71,10 +72,8 @@ template = {
             "type": "object",
             "properties": {
                 "id": {"type": "integer"},
-                "op_type": {
-                    "type": "string",
-                    "enum": ["pending","delivered","report","cancelled"]
-                },
+                "type": {"type": "string", "enum": ["order","report"]},
+                "status": {"type": "string", "enum": ["pending","delivered","cancelled","recorded"]},
                 "date": {"type": "string", "format": "date-time"},
                 "customer": {"$ref": "#/definitions/Customer"}, #"customer_id": {"type": "integer"},
                 "items": {
@@ -82,7 +81,7 @@ template = {
                     "items": {"$ref": "#/definitions/OperationItemResponse"}
                 }
             },
-            "required": ["id", "op_type", "date", "customer"] #, "items"]
+            "required": ["id", "date", "customer"]
         }
     },
     "paths": {
@@ -266,7 +265,7 @@ template = {
                         }
                     },
                     "403": {
-                        "description": "Forbidden — user not admin or op_type not pending",
+                        "description": "Forbidden — user not admin or order not pending",
                         "schema": {
                             "type": "object",
                             "properties": {
@@ -428,6 +427,30 @@ def create_app(test_config=None):
     @app.before_request
     def add_correlation_id():
         g.correlation_id = uuid.uuid4() 
+        g.request_id = request.headers.get('X-Request-ID', str(uuid.uuid4()))
+        g._t0 = time.time()
+
+    @app.after_request
+    @jwt_required(optional=True)
+    def access_log(resp):
+        from app.routes.main import current_user
+        cu = current_user()
+        t1 = time.time()
+        duration = int((t1 - g._t0) * 1000)  # in ms
+        data = {
+            # "correlation_id": str(g.correlation_id),
+            "request_id": g.request_id,
+            # "remote_addr": request.remote_addr,
+            "method": request.method,
+            # "scheme": request.scheme,
+            "path": request.path,
+            "status": resp.status_code,
+            "duration": duration,
+            "user_agent": request.user_agent.string,
+            "user_id": cu.id if cu else "anonymous"
+        }
+        # log_event("http.access", **data) # logging.info(json.dumps(data))
+        return resp
 
 
     from app.routes.auth import auth_bp

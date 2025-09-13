@@ -49,14 +49,21 @@ def create_operation(op_dict, user_map, book_map):
     seed_user_id = op_dict["user_id"]
     user = user_map[seed_user_id]
 
+    # Map combined type to normalized type/status
+    legacy_type = op_dict.get("type")
+    if legacy_type in ("pending", "delivered", "cancelled"):
+        normalized_type, normalized_status = "order", legacy_type
+    elif legacy_type == "report":
+        normalized_type, normalized_status = "report", "recorded"
+    else:
+        normalized_type, normalized_status = "order", "pending"
+
     op = Operation(
         id=op_dict["id"],
         customer_id=user.id,
-        op_type=op_dict["type"],
-        # status=op_dict["status"],
+        type=normalized_type,
+        status=normalized_status,
         date=parse_ts(op_dict.get("created_at")),
-        # delivered_at=parse_ts(op_dict.get("delivered_at")),
-        # cancelled_at=parse_ts(op_dict.get("cancelled_at")),
     )
     db.session.add(op)
     db.session.flush()  # ensure op.id exists for items

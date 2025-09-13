@@ -14,7 +14,7 @@ def list_sales():
     schema = OperationSchema(many=True)
     sales = Operation.query.filter(
         Operation.customer_id == get_jwt_identity(),
-        Operation.op_type == "report"
+        Operation.type == "report"
     )
     return jsonify({"data": schema.dump(sales)}), 200
 
@@ -31,7 +31,8 @@ def report_sale():
     report = schema.load(data)
     
     report.customer_id = user.id
-    report.op_type = "report"
+    report.type = "report"
+    report.status = "recorded"
     db.session.add(report)
     db.session.commit()
     log_event("report submitted", report_id=report.id, customer=report.customer.email,

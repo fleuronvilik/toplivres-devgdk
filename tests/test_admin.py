@@ -1,7 +1,7 @@
 # tests/test_admin.py
 
 def test_admin_delete_delivered_sets_cancelled(client, auth_headers):
-    # Assume Bob already has operation id=1 in the seed with op_type="delivered"
+    # Assume Bob already has operation id=1 in the seed with delivered order
     op_id = 1
 
     # Delete as customer should fail
@@ -18,4 +18,5 @@ def test_admin_delete_delivered_sets_cancelled(client, auth_headers):
     from app.models import Operation
     op = Operation.query.get(op_id)
     assert op is not None
-    assert op.op_type == "cancelled"
+    assert op.type == 'order'
+    assert op.status == "cancelled"

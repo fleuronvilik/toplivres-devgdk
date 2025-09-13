@@ -20,12 +20,14 @@ def create_order():
     user_id = get_jwt_identity()
 
     report, prev = can_request_delivery(user_id)
-    if prev and prev.op_type == "pending":
+    if prev and prev.status == "pending":
         return error_response("Wait for delivery or cancel existing request first", 403, "order")
     if prev and not report:
         return error_response("A report since last delivery is required", 403, "order")
     
     op.customer_id = user_id
+    op.type = 'order'
+    op.status = 'pending'
     db.session.add(op)
     db.session.commit()
     log_event("order created", order_id=op.id, customer=op.customer.email, books_count=sum([item.quantity for item in op.items]))
@@ -38,8 +40,8 @@ def create_order():
 def list_orders():
     schema = OperationSchema(many=True)
     orders = Operation.query.filter(
-            Operation.customer_id==get_jwt_identity(),
-            (Operation.op_type == "delivered") | (Operation.op_type == "pending")
+            Operation.customer_id == get_jwt_identity(),
+            (Operation.type == 'order') & (Operation.status.in_(["delivered", "pending"]))
         ).all()
     return jsonify({"data": schema.dump(orders)}), 200
 
@@ -52,13 +54,13 @@ def cancel_order(operation_id):
     # is it of the pending type
     # is it owned by the customer sending the request
     op = Operation.query.get(operation_id)
-    if not op or (op.op_type not in ["delivered", "pending"]) or (not op.customer_id == int(get_jwt_identity())):
+    if (not op) or (not (op.type == 'order' and op.status in ["delivered", "pending"])) or (not op.customer_id == int(get_jwt_identity())):
         return error_response("Order not found", 404, "order")
     #elif not op.customer_id == int(get_jwt_identity()):
     #    return jsonify({"msg": "You don't own the request you are trying to cancel."}), 403
-    if not op.op_type == "pending":
+    if not (op.status == "pending"):
         return error_response("You can only cancel pending order", 403, "order")   
-    op.op_type = "cancelled"
+    op.status = "cancelled"
     db.session.commit()
     log_event("order cancelled", order_id=op.id, customer=op.customer.email, reason="user_deleted_pending")
     return OperationSchema().dump(op), 204

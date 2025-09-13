@@ -203,10 +203,11 @@ async function loadCustomerOrders(typeFilter = "") {
     tr.innerHTML = `
       <td>${op.id}</td>
       <td>${op.date}</td>
-      <td>${op.op_type}</td>
+      <td>${op.type || ''}</td>
+      <td>${op.status || ''}</td>
       <td>
         <button class="viewItemsBtn btn">View items</button>
-        ${op.op_type === "pending"
+        ${op.type === "order" && op.status === "pending"
         ? `<button data-id="${op.id}" class="cancelBtn btn btn-danger">Cancel</button>`
         : ""}
       </td>
@@ -324,13 +325,14 @@ async function loadAdminOperations() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${op.id}</td>
-      <td>${op.op_type}</td>
       <td>${op.date}</td>
       <td><a href="/users/${op.customer.id}">${op.customer.name || ""}</a></td>
+      <td>${op.type || ''}</td>
+      <td>${op.status || ''}</td>
       <td>
         <button class="viewItemsBtn btn">View items</button>
         <button data-action="delete" data-id="${op.id}" class="btn btn-danger">Delete</button>
-        ${op.op_type === "pending" ? `<button data-action="confirm" data-id="${op.id}" class="btn btn-accent">Confirm</button>` : ""}
+        ${op.type === "order" && op.status === "pending" ? `<button data-action=\"confirm\" data-id=\"${op.id}\" class=\"btn btn-accent\">Confirm</button>` : ""}
       </td>
     `;
     tbody.appendChild(tr);

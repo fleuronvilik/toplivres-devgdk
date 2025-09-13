@@ -28,8 +28,8 @@ def test_customer_report_contains_only_book_in_his_inventory(client, auth_header
 def test_customer_report_with_invalid_quantities(client, auth_headers):
     payload = {
         "items": [
-            {"book_id": 1, "quantity": 5},
-            {"book_id": 2, "quantity": 1}
+            {"book_id": 1, "quantity": 1},
+            {"book_id": 2, "quantity": 5}
         ]
     }
     res = client.post('/api/sales', json=payload, headers=auth_headers["bob"])
@@ -38,13 +38,13 @@ def test_customer_report_with_invalid_quantities(client, auth_headers):
     assert "errors" in data
     assert "items" in data["errors"]
     assert "Insufficient stock" in data["errors"]["items"][0]
-    assert "Book One" in data["errors"]["items"][0]
+    assert "Book Two" in data["errors"]["items"][0]
 
 def test_multiple_valid_reports(client, auth_headers):
     payload = {
         "items": [
-            {"book_id": 1, "quantity": 1},
-            {"book_id": 2, "quantity": 3}
+            {"book_id": 1, "quantity": 3},
+            {"book_id": 2, "quantity": 1}
         ]
     }
 
@@ -58,17 +58,17 @@ def test_inventory_decrease(client, auth_headers):
     payload = {
         "items": [
             {"book_id": 1, "quantity": 2},
-            {"book_id": 2, "quantity": 3}
+            {"book_id": 2, "quantity": 2}
         ]
     }
 
     inventory = get_inventory(1)
-    assert inventory[1] == 2 and inventory[2] == 10
+    assert inventory[1] == 10 and inventory[2] == 2
 
     res = client.post('/api/sales', json=payload, headers=auth_headers["bob"])
 
     inventory = get_inventory(1)
-    assert inventory[1] == 0 and inventory[2] == 7
+    assert inventory[1] == 8 and inventory[2] == 0
 
 def test_admin_cannot_report_sale(client, auth_headers):
     res = client.post('/api/sales', json={}, headers=auth_headers["admin"])
@@ -80,16 +80,19 @@ def test_admin_cannot_report_sale(client, auth_headers):
 def test_admin_can_delete_sale_report(client, auth_headers):
     payload = {
         "items": [
-            {"book_id": 1, "quantity": 2},
-            {"book_id": 2, "quantity": 3}
+            {"book_id": 1, "quantity": 3},
+            {"book_id": 2, "quantity": 2}
         ]
     }
 
     inventory = get_inventory(1)
-    assert inventory[1] == 2 and inventory[2] == 10
+    assert inventory[1] == 10 and inventory[2] == 2
 
     res = client.post('/api/sales', json=payload, headers=auth_headers["bob"])
     report_id = res.get_json()["id"]
+    
+    inventory = get_inventory(1)
+    assert inventory[1] == 7 and inventory[2] == 0
 
     res = client.delete(f'/api/admin/operations/{report_id}', headers=auth_headers["bob"])
     assert res.status_code == 403
@@ -100,7 +103,7 @@ def test_admin_can_delete_sale_report(client, auth_headers):
     res = client.delete(f'/api/admin/operations/{report_id}', headers=auth_headers["admin"])
     assert res.status_code == 204
     inventory = get_inventory(1)
-    assert inventory[1] == 2 and inventory[2] == 10
+    assert inventory[1] == 10 and inventory[2] == 2
 
     res = client.delete(f'/api/admin/operations/{report_id}', headers=auth_headers["admin"])
     assert res.status_code == 404

@@ -38,7 +38,8 @@ def test_customer_valid_order(client, auth_headers):
     res = client.post("/api/orders", json=payload, headers=auth_headers["customer"])
     assert res.status_code == 201
     data = res.get_json()
-    assert data["op_type"] == "pending"
+    assert data["type"] == "order"
+    assert data["status"] == "pending"
 
 def test_customer_second_order_fails(client, auth_headers):
     """Step 5: Alice tries to place a new order while there is one pending"""
@@ -51,7 +52,8 @@ def test_customer_second_order_fails(client, auth_headers):
     res = client.post("/api/orders", json=payload, headers=auth_headers["customer"])
     assert res.status_code == 201
     data = res.get_json()
-    assert data["op_type"] == "pending"
+    assert data["type"] == "order"
+    assert data["status"] == "pending"
 
     res = client.post("/api/orders", json=payload, headers=auth_headers["customer"])
     assert res.status_code == 403
@@ -69,7 +71,8 @@ def test_customer_cancel_order(client, auth_headers):
     res = client.post("/api/orders", json=payload, headers=auth_headers["customer"])
     assert res.status_code == 201
     data = res.get_json()
-    assert data["op_type"] == "pending"
+    assert data["type"] == "order"
+    assert data["status"] == "pending"
 
     res = client.delete("/api/orders/2", json=payload, headers=auth_headers["customer"])
     assert res.status_code == 204
@@ -101,7 +104,8 @@ def test_admin_only_can_confirm_order(client, auth_headers):
     res = client.post("/api/orders", json=payload, headers=auth_headers["customer"])
     assert res.status_code == 201
     data = res.get_json()
-    assert data["op_type"] == "pending"
+    assert data["type"] == "order"
+    assert data["status"] == "pending"
 
     res = client.put("/api/admin/orders/2/confirm", json=payload, headers=auth_headers["customer"])
     assert res.status_code == 403
@@ -124,7 +128,8 @@ def test_customer_cannot_cancel_after_confirmation(client, auth_headers):
     res = client.post("/api/orders", json=payload, headers=auth_headers["customer"])
     assert res.status_code == 201
     data = res.get_json()
-    assert data["op_type"] == "pending"
+    assert data["type"] == "order"
+    assert data["status"] == "pending"
 
     res = client.put("/api/admin/orders/2/confirm", json=payload, headers=auth_headers["admin"])
     assert res.status_code == 200

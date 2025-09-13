@@ -1,6 +1,6 @@
 from app.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import func
+from sqlalchemy import func, and_, or_
 from datetime import date
 
 # def inventory(customer_id=None, book_id=None):
@@ -84,7 +84,12 @@ class User(BaseModel):
             .join(Operation)
             .filter(Operation.customer_id == self.id)
             .filter(OperationItem.book_id == book_id)
-            .filter(Operation.op_type.notin_(["pending", "cancelled"]))
+            .filter(
+                or_(
+                    and_(Operation.type == 'order', Operation.status == 'delivered'),
+                    (Operation.type == 'report')
+                )
+            )
             .scalar()
         )
         return total
@@ -99,7 +104,9 @@ class Operation(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    op_type = db.Column(db.String(10), nullable=False, default="pending")  # "order" or "sale"
+    # New normalized fields
+    type = db.Column(db.String(10), nullable=False, default="order")  # 'order' | 'report'
+    status = db.Column(db.String(12), nullable=True, default="pending")  # orders: pending|delivered|cancelled; reports: recorded
     date = db.Column(db.Date, nullable=False, default=date.today)
 
     # relationships
@@ -115,7 +122,8 @@ class Operation(db.Model):
         for item in self.items:
             details += str(item)
             details += "\n"
-        return f'{self.customer.name}: {self.op_type} on {self.date}\n---\n{details}'
+        normalized = f"{self.type}:{self.status}" if self.type else ""
+        return f'{self.customer.name}: {normalized} on {self.date}\n---\n{details}'
 
     
 

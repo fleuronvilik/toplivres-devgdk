@@ -1,6 +1,6 @@
 from app.extensions import db
 from app.models import Operation, OperationItem
-from sqlalchemy import func
+from sqlalchemy import func, and_, or_
 
 # def inventory(customer_id=None, book_id=None):
 #     if not customer_id and not book_id:
@@ -19,7 +19,13 @@ def get_inventory(user_id):
     rows = (
         db.session.query(OperationItem.book_id, func.sum(OperationItem.quantity))
         .join(Operation)
-        .filter(Operation.customer_id == user_id, Operation.op_type.notin_(["cancelled", "pending"]))
+        .filter(
+            Operation.customer_id == user_id,
+            or_(
+                and_(Operation.type == 'order', Operation.status == 'delivered'),
+                (Operation.type == 'report')
+            )
+        )
         .group_by(OperationItem.book_id)
         .all()
     )
@@ -30,8 +36,8 @@ def can_request_delivery(user_id):
     last_delivery = (
         Operation.query
         .filter_by(customer_id=user_id)
-        .filter(Operation.op_type.in_(['pending', 'delivered']))
-        .order_by(Operation.id.desc()) # Operation.date.desc()
+        .filter(and_(Operation.type == 'order', Operation.status.in_(['pending', 'delivered'])))
+        .order_by(Operation.id.desc())  # Operation.date.desc()
         .first()
     )
     if not last_delivery:
@@ -40,8 +46,9 @@ def can_request_delivery(user_id):
     #     return False, True
     report_exists = (
         Operation.query
-        .filter_by(customer_id=user_id, op_type='report')
-        .filter(Operation.id > last_delivery.id) #.filter(Operation.date > last_delivery.date)
+        .filter_by(customer_id=user_id)
+        .filter(Operation.type == 'report')
+        .filter(Operation.id > last_delivery.id)  # .filter(Operation.date > last_delivery.date)
         .first()
     )
     return report_exists is not None, last_delivery

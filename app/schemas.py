@@ -144,7 +144,6 @@ class SalesReportOperationSchema(BaseOperationSchema):
             elif inventory[book_id] < qty:
                 errors.setdefault("items", []).append(f"Insufficient stock ({inventory[book_id]}x {book.title})")
             item.quantity = -qty
-        
         if errors:
             raise ma.ValidationError(errors)
 
@@ -152,4 +151,3 @@ class SalesReportOperationSchema(BaseOperationSchema):
 class OperationCancelSchema(ma.Schema):
     customer_id = ma.fields.Integer(load_only=True)
     op_date = ma.fields.Date(required=True, load_only=True)
-    op_type = ma.fields.String(load_only=True)

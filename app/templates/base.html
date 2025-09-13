@@ -10,6 +10,15 @@
 
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
+    {% if role == 'admin' %}
+    <nav id="admin-nav" class="nav">
+      <div class="container">
+        <a href="/admin" class="nav-link">Operations</a>
+        <a href="/" class="nav-link">Books</a>
+        <a href="#" id="logoutLink" class="nav-link">Logout</a>
+      </div>
+    </nav>
+    {% endif %}
     <main id="main" class="container" tabindex="-1" data-role="{{ role }}">
         {% if not role %}
         <div id="login-section" class="hidden">

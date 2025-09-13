@@ -4,7 +4,7 @@ from app.models import Book, Operation, OperationItem, User
 from app.schemas import BookSchema, OperationSchema, UserSchema, UserUpdateSchema
 from app.utils.decorators import role_required
 from app.utils.helpers import error_response
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import aliased
 
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity, decode_token
@@ -121,7 +121,15 @@ def get_inventory():
                 .join(Operation, Operation.customer_id == User.id)
                 .join(OperationItem, OperationItem.operation_id == Operation.id)
                 .join(Book, OperationItem.book_id == Book.id)
-                .where(and_(User.id == user_id, Operation.op_type != "pending", Operation.op_type != "cancelled"))
+                .where(
+                    and_(
+                        User.id == user_id,
+                        or_(
+                            and_(Operation.type == 'order', Operation.status == 'delivered'),
+                            (Operation.type == 'report')
+                        )
+                    )
+                )
                 # .group_by(Book.title, User.name)
         )
     else:
@@ -130,7 +138,12 @@ def get_inventory():
                 .join(Operation, Operation.customer_id == User.id)
                 .join(OperationItem, OperationItem.operation_id == Operation.id)
                 .join(Book, OperationItem.book_id == Book.id)
-                .where(Operation.op_type != "pending", Operation.op_type != "cancelled")
+                .where(
+                    or_(
+                        and_(Operation.type == 'order', Operation.status == 'delivered'),
+                        (Operation.type == 'report')
+                    )
+                )
                 # .group_by(Book.title, User.name)
         )
         if request.args:
@@ -245,7 +258,7 @@ def get_user_stats(id):
         db.session.query(func.sum(OperationItem.quantity))
         .join(Operation, OperationItem.operation_id == Operation.id)
         .filter(Operation.customer_id == id)
-        .filter(Operation.op_type == "delivered")
+        .filter(and_(Operation.type == 'order', Operation.status == 'delivered'))
         .scalar()
     )
 
@@ -274,15 +287,16 @@ def get_user_stats(id):
 @jwt_required()
 @role_required("customer")
 def get_history():
-        query = Operation.query.filter_by(customer_id = get_jwt_identity())
+        query = Operation.query.filter_by(customer_id=get_jwt_identity())
         if (request.args):
-            op_type = request.args["type"]
-            if op_type == "order":
-                query = query.filter(Operation.op_type.in_(["pending", "delivered"]))
-            elif op_type == "report":
-                query = query.filter(Operation.op_type == "report")
+            filter_type = request.args["type"]
+            if filter_type == "order":
+                query = query.filter(and_(Operation.type == 'order', Operation.status.in_(["pending", "delivered"])))
+            elif filter_type == "report":
+                query = query.filter(Operation.type == 'report')
             else:
-                query = query.filter(Operation.op_type != "cancelled")
+                # All except cancelled orders
+                query = query.filter(or_(Operation.type == 'report', and_(Operation.type == 'order', Operation.status != 'cancelled')))
         schema = OperationSchema(many=True)
         return jsonify({"data": schema.dump(query.all())}), 200
 

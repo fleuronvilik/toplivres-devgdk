@@ -16,10 +16,12 @@ def confirm_order(order_id: int):
     Admin confirm order
     """
     order = Operation.query.get(order_id)
-    if not order or order.op_type != "pending":
+    if not order or not (order.type == 'order' and order.status == 'pending'):
         return error_response("Order not found or not pending", 404, "order")
     
-    order.op_type = "delivered"
+    # Transition to delivered (normalized + back-compat)
+    order.status = "delivered"
+    order.type = 'order'
     db.session.commit()
     log_event(
         "order confirmed",
@@ -38,8 +40,8 @@ def delete_operation(operation_id):
     op = Operation.query.get(operation_id)
     if not op:
         return error_response("Order or Report not found", 404, "operation")    
-    if op.op_type == "delivered":
-        op.op_type = "cancelled"
+    if (op.type == 'order' and op.status == 'delivered'):
+        op.status = "cancelled"
         db.session.commit()
         return OperationSchema().dump(op), 200
     
