@@ -46,25 +46,25 @@ def seed():
 
         # --- Operations ---
         # Alice's timeline'
-        op1 = Operation(op_type="delivered", customer=alice, date=date(2024, 6, 22)) # apôtres
+        op1 = Operation(type='order', status='delivered', customer=alice, date=date(2024, 6, 22)) # apôtres
         item1a = OperationItem(book=books["enfants"], quantity=5, operation=op1)
         item1b = OperationItem(book=books["mariage"], quantity=5, operation=op1)
 
-        op2 = Operation(op_type="report", customer=alice, date=date(2024, 7, 14)) # france
+        op2 = Operation(type='report', status='recorded', customer=alice, date=date(2024, 7, 14)) # france
         item2a = OperationItem(book=books["enfants"], quantity=-3, operation=op2)
         item2b = OperationItem(book=books["mariage"], quantity=-5, operation=op2)
 
-        op3 = Operation(op_type="delivered", customer=alice, date=date(2024, 7, 28)) # stjeanne
+        op3 = Operation(type='order', status='delivered', customer=alice, date=date(2024, 7, 28)) # stjeanne
         item3a = OperationItem(book=books["sommeil"], quantity=5, operation=op3)
         item3b = OperationItem(book=books["mariage"], quantity=5, operation=op3)
 
         # Bob's timeline
-        op4 = Operation(op_type="delivered", customer=bob, date=date(2024, 10, 3)) # germany, stars
+        op4 = Operation(type='order', status='delivered', customer=bob, date=date(2024, 10, 3)) # germany, stars
         item4a = OperationItem(book=books["barreau"], quantity=2, operation=op4)
         item4b = OperationItem(book=books["sommeil"], quantity=10, operation=op4)
         item4c = OperationItem(book=books["epargne"], quantity=3, operation=op4)
 
-        op5 = Operation(op_type="report", customer=bob, date=date(2024, 12, 31)) # ndlt
+        op5 = Operation(type='report', status='recorded', customer=bob, date=date(2024, 12, 31)) # ndlt
         item5a = OperationItem(book=books["barreau"], quantity=-1, operation=op5)
         item5b = OperationItem(book=books["sommeil"], quantity=-6, operation=op5)
 
