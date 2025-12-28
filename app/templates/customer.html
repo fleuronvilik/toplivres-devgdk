@@ -9,7 +9,8 @@
     <p>Ici, tu as la possibilité de faire des commandes et de les suivre. Nous t'offrons un historique ainsi que des statistiques de vente.</p>
   </div>
 
-  {% include "partials/_book_selection.html" %}
+  {# Swap in a table-based selector for better scalability #}
+  {% include "partials/_book_selection_table.html" %}
   {% include "partials/_customer_history.html" %}
   {% include "partials/_customer_inventory.html" %}
   {% include "partials/_customer_stats.html" %}

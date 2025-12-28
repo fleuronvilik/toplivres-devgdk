@@ -71,19 +71,147 @@ export async function loadAdminOperations() {
 export async function loadBooks() {
   const books = await apiFetch("/api/books");
   const container = document.getElementById("books-list");
-  container.innerHTML = "";
+  const table = document.getElementById("books-table");
+  const tbody = table ? table.querySelector("tbody") : null;
+  if (!container || !tbody) return;
+
+  // Build a quick stock map from inventory (by title)
+  let stockByTitle = {};
+  try {
+    const customerId = resolveTargetCustomerId();
+    if (customerId) {
+      const inv = await apiFetch(`/api/users/inventory?id=${customerId}`);
+      (inv.data || []).forEach(row => {
+        // Inventory endpoint returns title + aggregated stock
+        stockByTitle[row.title] = parseInt(row.stock || 0);
+      });
+    }
+  } catch (_) {
+    // ignore inventory load failures; treat as 0 stock
+  }
+
+  // Clear and populate rows
+  tbody.innerHTML = "";
+  const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'EUR' });
   books.data.forEach(b => {
-    const row = document.createElement("div");
-    row.innerHTML = `
-      <label for="qty-${b.id}">
-        <span class="title">${b.title}</span>
-        <span class="price">($${b.unit_price})</span>
-      </label>
-      Qty: <input type="number" name="qty-${b.id}" id="qty-${b.id}" min="0" value="0">
+    const tr = document.createElement('tr');
+    const price = Number(b.unit_price);
+    const stock = stockByTitle[b.title] || 0;
+    tr.id = `book-row-${b.id}`;
+    tr.innerHTML = `
+      <td class="book-title">${b.title}</td>
+      <td class="book-price" data-price="${price}">${fmt.format(price)}</td>
+      <td class="book-qty">
+        <div class="qty-control">
+          <button type="button" class="qty-btn dec" aria-label="Decrease quantity" data-target="qty-${b.id}">−</button>
+          <input type="number" name="qty-${b.id}" id="qty-${b.id}" min="0" step="1" value="0" data-stock="${stock}" aria-describedby="err-${b.id}">
+          <button type="button" class="qty-btn inc" aria-label="Increase quantity" data-target="qty-${b.id}">+</button>
+        </div>
+        <div class="field-error" id="err-${b.id}"></div>
+      </td>
+      <td class="book-subtotal" data-subtotal-for="${b.id}">${fmt.format(0)}</td>
+      <td class="book-stock" data-stock-for="${b.id}">${stock}</td>
     `;
-    row.classList.add("grid-row");
-    container.appendChild(row);
+    tbody.appendChild(tr);
   });
+
+  // Recalculate subtotals and grand total on qty changes
+  function recalc() {
+    let total = 0;
+    let selected = 0;
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const priceCell = tr.querySelector('.book-price');
+      const qtyInput = tr.querySelector('input[type="number"]');
+      const subCell = tr.querySelector('.book-subtotal');
+      const errCell = tr.querySelector('.field-error');
+      const price = Number(priceCell?.dataset.price || 0);
+      const qty = Number(qtyInput?.value || 0);
+      const stock = Number(qtyInput?.dataset.stock || 0);
+      const subtotal = price * qty;
+      if (subCell) subCell.textContent = fmt.format(subtotal);
+      if (qtyInput && errCell) {
+        const inlineToggle = document.getElementById('toggle-inline-errors');
+        const inlineEnabled = inlineToggle ? inlineToggle.checked : true;
+        let msg = '';
+        if (qty < 0) {
+          msg = 'Must be greater than or equal to 0';
+        } else if (qty === 0 && qtyInput.dataset.touched === 'true') {
+          msg = 'Enter a positive quantity';
+        } else if (qty > stock) {
+          msg = `Exceeds available stock (max ${stock})`;
+        }
+        errCell.textContent = inlineEnabled ? msg : '';
+        if (inlineEnabled && msg) qtyInput.setAttribute('aria-invalid', 'true');
+        else qtyInput.removeAttribute('aria-invalid');
+      }
+      if (qty > 0) selected++;
+      total += subtotal;
+    });
+    const totalEl = document.getElementById('books-total-amount');
+    if (totalEl) totalEl.textContent = fmt.format(total);
+    const empty = document.getElementById('books-empty-state');
+    if (empty) empty.classList.toggle('hidden', selected > 0);
+  }
+
+  tbody.addEventListener('input', (e) => {
+    if (e.target && e.target.matches('input[type="number"]')) {
+      e.target.dataset.touched = 'true';
+      recalc();
+    }
+  });
+  tbody.addEventListener('click', (e) => {
+    const btn = e.target.closest('.qty-btn');
+    if (!btn) return;
+    const targetId = btn.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+    const current = Number(input.value || 0);
+    if (btn.classList.contains('inc')) {
+      input.value = String(current + 1);
+    } else if (btn.classList.contains('dec')) {
+      input.value = String(Math.max(0, current - 1));
+    }
+    input.dataset.touched = 'true';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  recalc();
+
+  // Stock column toggle
+  const toggle = document.getElementById('toggle-stock');
+  if (toggle && table) {
+    // Hide by default
+    table.classList.add('hide-stock');
+    toggle.checked = false;
+    toggle.addEventListener('change', () => {
+      table.classList.toggle('hide-stock', !toggle.checked);
+    });
+  }
+
+  // Inline errors toggle
+  const inlineToggle = document.getElementById('toggle-inline-errors');
+  if (inlineToggle) {
+    inlineToggle.addEventListener('change', () => recalc());
+  }
+
+  // Check order-block condition: if there is a pending order, block new order placement
+  try {
+    const res = await apiFetch('/api/operations?type=order');
+    const hasPending = (res.data || []).some(op => op.status === 'pending');
+    const box = document.getElementById('order-blocked-box');
+    const btnOrder = document.getElementById('btn-place-order');
+    if (hasPending) {
+      if (box) {
+        box.textContent = "You can’t place a new order until your pending order is resolved.";
+        box.classList.remove('hidden');
+      }
+      if (btnOrder) btnOrder.classList.add('hidden');
+    } else {
+      if (box) box.classList.add('hidden');
+      if (btnOrder) btnOrder.classList.remove('hidden');
+    }
+  } catch (_) {
+    // ignore
+  }
 }
 
 function resolveTargetCustomerId() {

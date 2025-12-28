@@ -1,0 +1,54 @@
+<div id="orders-tab" class="tab-pane active">
+  <div class="card">
+    <h3>Select quantities and submit as an order or sales report.</h3>
+    <p id="books-empty-state" class="empty-state hidden">No items added. Enter a quantity to begin.</p>
+    <!-- <p class="subtle-help">Select quantities and submit as an order or sales report.</p> -->
+    <div class="table-toolbar">
+      <label class="toggle">
+        <input type="checkbox" id="toggle-stock" aria-controls="books-table">
+        <span>Show stock</span>e
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-inline-errors" checked>
+        <span>Show inline errors while editing</span>
+      </label>
+    </div>
+    <form id="operation-form" class="grid-form">
+      <div id="books-list">
+        <div class="table-scroll">
+        <table id="books-table" class="table">
+          <colgroup>
+            <col class="col-title">
+            <col class="col-price">
+            <col class="col-qty">
+            <col class="col-subtotal">
+            <col class="col-stock">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Unit Price</th>
+              <th class="qty-header">Qty</th>
+              <th class="subtotal-header">Subtotal</th>
+              <th class="stock-header">Stock</th>
+            </tr>
+          </thead>
+          <tbody><!-- populated by JS --></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="text-align:right;font-weight:600;">Total:</td>
+              <td id="books-total-amount">$0.00</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        </div>
+      </div>
+      <div id="order-blocked-box" class="info-box hidden"></div>
+      <div id="order-actions" class="form-actions">
+        <button id="btn-place-order" type="submit" data-action="order" name="action" value="order" class="btn btn-submit">Place Order</button>
+        <button id="btn-report-sales" type="submit" data-action="sale" name="action" value="sale" class="btn btn-submit">Report Sales</button>
+      </div>
+    </form>
+  </div>
+</div>
