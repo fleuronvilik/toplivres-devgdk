@@ -406,7 +406,7 @@ def create_app(test_config=None):
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
     app.config.update(
         JWT_TOKEN_LOCATION=["headers", "cookies"],  # accept both
-        JWT_COOKIE_SECURE=False,                     # True in prod (HTTPS)
+        JWT_COOKIE_SECURE=os.getenv("FLASK_ENV") == "production" or os.getenv("APP_ENV") == "production",
         JWT_COOKIE_SAMESITE="Lax",
         JWT_COOKIE_CSRF_PROTECT=True,               # enables CSRF double-submit
         JWT_CSRF_IN_COOKIES=True,                  # store CSRF token in a cookie
