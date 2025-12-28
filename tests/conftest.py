@@ -4,6 +4,8 @@ from http.cookies import SimpleCookie
 from app import create_app, db
 from app.models import User, Book, Operation, OperationItem
 
+collect_ignore = ["_legacy"]
+
 @pytest.fixture
 def app():
     app = create_app({
@@ -30,7 +32,7 @@ def app():
         book2 = Book(title="Book Two", unit_price=15)
         book3 = Book(title="Book Three", unit_price=20)
 
-        op = Operation(customer=bob, type='order', status='delivered', op_type="delivered", date=date(2024, 10, 3)) # deutschland, rentrée stars
+        op = Operation(customer=bob, type='order', status='delivered', date=date(2024, 10, 3)) # deutschland, rentrée stars
         db.session.add_all([
             OperationItem(operation=op, book=book2, quantity=2),
             OperationItem(operation=op, book=book1, quantity=10)

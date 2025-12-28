@@ -2,18 +2,7 @@ from app.extensions import db
 from app.models import Operation, OperationItem
 from sqlalchemy import func, and_, or_
 
-# def inventory(customer_id=None, book_id=None):
-#     if not customer_id and not book_id:
-#         print("a sequence, it is")
-#     elif customer_id and book_id:
-#         print("how many of given book customer has")
-#         timeline = Operation.query.filter_by(customer_id=customer_id)
-#         count = 0
-#         for op in timeline:
-#             for i in op.items:
-#                 if (not op.op_type == "pending" and i.book_id == book_id):
-#                     count += i.quantity
-#                 return count
+# legacy commented helpers removed
 
 def get_inventory(user_id):
     rows = (
@@ -42,8 +31,7 @@ def can_request_delivery(user_id):
     )
     if not last_delivery:
         return None, None # No previous deliveries, can request
-    # if last_delivery.op_type == "pending":
-    #     return False, True
+    # last_delivery == pending case handled by caller's checks
     report_exists = (
         Operation.query
         .filter_by(customer_id=user_id)
