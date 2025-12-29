@@ -85,7 +85,7 @@ def get_inventory():
             user_id = int(request.args["id"])
             stmt = stmt.where(User.id == user_id)
 
-    inventory = db.session.execute(stmt.group_by(Book.title, User.name)).all()
+    inventory = db.session.execute(stmt.group_by(Book.title, User.name, User.id)).all()
     inventory = [
         {
             "id": row.id,
