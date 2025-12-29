@@ -7,6 +7,8 @@
       -->
     <form id="operation-form" class="grid-form">
         <div id="books-list"><!-- Populated by JS --></div>
+        <p id="books-empty-state" class="empty-state hidden">Select items with quantities > 0.</p>
+        <div id="order-blocked-box" class="hidden" role="status" aria-live="polite"></div>
         <div class="form-actions">
             <button type="submit" data-action="order" name="action" value="order" class="btn btn-submit">Submit Order</button>
             <button type="submit" data-action="sale" name="action" value="sale" class="btn btn-submit">Report Sale</button>

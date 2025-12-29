@@ -29,18 +29,16 @@ export async function apiFetch(path, options = {}) {
   } catch {
     data = {};
   }
+  
   if (!res.ok) {
-    // Standardized error format: { "errors": { category: [messages...] } }
-    if (data.errors) {
-      for (const [category, messages] of Object.entries(data.errors)) {
-        messages.forEach(msg => notify(`[${category}] ${msg}`, 'error'));
-      }
-    } else {
-      notify(data.msg || res.statusText, 'error');
-      // logout(); // Token has expired or is invalid, don't spam with errors, logout
-    }
-    throw new Error("API Request failed"); //new Error(await res.text());
+    // Throw a *rich* error so UI can decide what to do.
+    const err = new Error("API Request failed");
+    err.status = res.status;
+    err.payload = data;
+    err.url = res.url;
+    throw err;
   }
+
   return data;
 }
 
@@ -84,6 +82,48 @@ export async function loadBooks() {
     row.classList.add("grid-row");
     container.appendChild(row);
   });
+
+  await refreshOrderBlockedState();
+}
+
+export function setOrderBlockedState(blocked, message = "You already have a pending request.") {
+  const box = document.getElementById("order-blocked-box");
+  const btnOrder = document.querySelector('#operation-form button[data-action="order"]');
+  const form = document.getElementById("operation-form");
+  if (blocked) {
+    if (box) {
+      box.textContent = message || "You already have a pending request.";
+      box.classList.remove("hidden");
+    }
+    if (btnOrder) {
+      btnOrder.disabled = true;
+      btnOrder.classList.add("btn-disabled");
+      btnOrder.setAttribute("aria-disabled", "true");
+    }
+    if (form) form.dataset.orderBlocked = "true";
+    return;
+  }
+
+  if (box) {
+    box.textContent = "";
+    box.classList.add("hidden");
+  }
+  if (btnOrder) {
+    btnOrder.disabled = false;
+    btnOrder.classList.remove("btn-disabled");
+    btnOrder.removeAttribute("aria-disabled");
+  }
+  if (form) form.dataset.orderBlocked = "false";
+}
+
+export async function refreshOrderBlockedState() {
+  try {
+    const res = await apiFetch("/api/operations?type=order");
+    const hasPending = (res.data || []).some(op => op.status === "pending");
+    setOrderBlockedState(hasPending, hasPending ? "You already have a pending request." : "");
+  } catch (_) {
+    // Ignore; don't block ordering on a transient fetch error.
+  }
 }
 
 function resolveTargetCustomerId() {

@@ -4,6 +4,8 @@ from app.models import Operation, User, db
 from app.schemas import OperationSchema, SalesReportOperationSchema
 from app.utils.decorators import role_required
 from app import log_event
+from app.utils.helpers import error_response
+from marshmallow import ValidationError
 
 sales_bp = Blueprint("sale", __name__, url_prefix="/api/sales")
 
@@ -29,8 +31,10 @@ def report_sale():
 
     schema = SalesReportOperationSchema(user_id=user.id)
     data = request.get_json()
-
-    report = schema.load(data)
+    try:
+        report = schema.load(data)
+    except ValidationError as err:
+        return error_response(err.messages, 400)
     
     report.customer_id = user.id
     report.type = "report"

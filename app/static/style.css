@@ -351,19 +351,33 @@ img {
   gap: 10px;
 }
 
+.empty-state {
+  margin-top: 10px;
+  color: var(--color-text-light);
+}
+
+.info-box {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  background: #f7f7f7;
+  border-radius: 8px;
+  color: var(--color-text-light);
+}
+
 /* =========================  
    Error Box
 ========================= */
 #alerts {
-  padding: 12px 16px;
-  border-radius: 8px;
   margin-bottom: 16px;
 }
 
 .alert div {
   display: flex;
   align-items: flex-start;
-  margin: 1em 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: .25em 0;
 }
 
 /* Ensure item padding even if other rules collide */
