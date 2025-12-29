@@ -11,9 +11,10 @@ sales_bp = Blueprint("sale", __name__, url_prefix="/api/sales")
 @jwt_required()
 @role_required("customer")
 def list_sales():
+    customer_id = int(get_jwt_identity())
     schema = OperationSchema(many=True)
     sales = Operation.query.filter(
-        Operation.customer_id == get_jwt_identity(),
+        Operation.customer_id == customer_id,
         Operation.type == "report"
     )
     return jsonify({"data": schema.dump(sales)}), 200
@@ -23,7 +24,8 @@ def list_sales():
 @jwt_required()
 @role_required("customer")
 def report_sale():
-    user = User.query.get(get_jwt_identity())
+    customer_id = int(get_jwt_identity())
+    user = User.query.get(customer_id)
 
     schema = SalesReportOperationSchema(user_id=user.id)
     data = request.get_json()

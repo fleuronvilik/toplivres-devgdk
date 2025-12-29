@@ -39,8 +39,9 @@ def current_user():
 @main_bp.route('/api/users/me')
 @jwt_required()
 def user_info():
+    user_id = int(get_jwt_identity())
     schema = UserSchema()
-    current_user = User.query.get(get_jwt_identity())
+    current_user = User.query.get(user_id)
     return schema.dump(current_user), 200
 
 
@@ -81,7 +82,7 @@ def get_inventory():
                 # .group_by(Book.title, User.name)
         )
         if request.args:
-            user_id = request.args["id"]
+            user_id = int(request.args["id"])
             stmt = stmt.where(User.id == user_id)
 
     inventory = db.session.execute(stmt.group_by(Book.title, User.name)).all()
@@ -221,7 +222,8 @@ def get_user_stats(id):
 @jwt_required()
 @role_required("customer")
 def get_history():
-        query = Operation.query.filter_by(customer_id=get_jwt_identity())
+        customer_id = int(get_jwt_identity())
+        query = Operation.query.filter_by(customer_id=customer_id)
         if (request.args):
             filter_type = request.args["type"]
             if filter_type == "order":

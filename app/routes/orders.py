@@ -17,7 +17,7 @@ def create_order():
     schema = DeliveryOperationSchema()
     op = schema.load(request.json)
 
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
 
     report, prev = can_request_delivery(user_id)
     if prev and prev.status == "pending":
@@ -38,9 +38,10 @@ def create_order():
 @jwt_required()
 @role_required("customer")
 def list_orders():
+    customer_id = int(get_jwt_identity())
     schema = OperationSchema(many=True)
     orders = Operation.query.filter(
-            Operation.customer_id == get_jwt_identity(),
+            Operation.customer_id == customer_id,
             (Operation.type == 'order') & (Operation.status.in_(["delivered", "pending"]))
         ).all()
     return jsonify({"data": schema.dump(orders)}), 200
@@ -50,11 +51,12 @@ def list_orders():
 @jwt_required()
 @role_required("customer")
 def cancel_order(operation_id):
+    customer_id = int(get_jwt_identity())
     # Does the operation exists,
     # is it of the pending type
     # is it owned by the customer sending the request
     op = Operation.query.get(operation_id)
-    if (not op) or (not (op.type == 'order' and op.status in ["delivered", "pending"])) or (not op.customer_id == int(get_jwt_identity())):
+    if (not op) or (not (op.type == 'order' and op.status in ["delivered", "pending"])) or (not op.customer_id == customer_id):
         return error_response("Order not found", 404, "order")
     #elif not op.customer_id == int(get_jwt_identity()):
     #    return jsonify({"msg": "You don't own the request you are trying to cancel."}), 403
