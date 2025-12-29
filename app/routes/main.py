@@ -174,7 +174,7 @@ def get_user_stats(id):
         .join(Book, OperationItem.book_id == Book.id)  # Joining OperationItem with Book
         .filter(OperationItem.quantity < 0)  # Filtering for quantity less than 0
         .filter(User.id == id)
-        #.group_by(User.id, User.name)  # Grouping by User ID and Name
+        .group_by(User.id, User.name)  # Grouping by User ID and Name
     )
 
     row = query.first()

@@ -433,8 +433,15 @@ def create_app(test_config=None):
     @app.after_request
     @jwt_required(optional=True)
     def access_log(resp):
-        from app.routes.main import current_user
-        cu = current_user()
+        # from app.routes.main import current_user
+        # cu = current_user()
+
+        try:
+            # No DB query here — just read identity from JWT
+            user_id = get_jwt_identity()  # usually str/int, or None
+        except Exception:
+            user_id = None
+
         t1 = time.time()
         duration = int((t1 - g._t0) * 1000)  # in ms
         data = {
@@ -447,7 +454,7 @@ def create_app(test_config=None):
             "status": resp.status_code,
             "duration": duration,
             "user_agent": request.user_agent.string,
-            "user_id": cu.id if cu else "anonymous"
+            "user_id": user_id or "anonymous"
         }
         # log_event("http.access", **data) # logging.info(json.dumps(data))
         return resp
