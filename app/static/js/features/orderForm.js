@@ -31,19 +31,44 @@ export function bindOrderForm(form, submitFn) {
 
     //const items = collectItemsFromForm(form); // qty > 0 rows
     const items = [];
+    // Track inline errors for 'sale' exceeding stock
+    const errors = [];
     for (const [key, value] of fd.entries()) {
       if (key.startsWith('qty-')) {
         const qty = parseInt(value);
         if (qty > 0) {
           const bookId = key.slice(4);
+          // Inline validation for sales: do not allow qty > stock
+          if (action === 'sale') {
+            const input = form.querySelector(`#qty-${bookId}`);
+            const stock = parseInt(input?.dataset?.stock || '0', 10);
+            const errCell = form.querySelector(`#err-${bookId}`);
+            if (qty > stock) {
+              if (errCell) errCell.textContent = 'Quantity exceeds your current stock';
+              input?.setAttribute('aria-invalid', 'true');
+              errors.push(bookId);
+              continue; // skip pushing invalid item
+            } else {
+              if (errCell) errCell.textContent = '';
+              input?.removeAttribute('aria-invalid');
+            }
+          }
           items.push({ book_id: bookId, quantity: qty });
         }
       }
     }
     updateEmptyState();
     if (items.length === 0) {
-      const firstQty = form.querySelector('input[name^="qty-"]');
+      // Inline empty-state message is already present under the table
+      // Focus the first qty input to guide the user
+      const firstQty = form.querySelector('input[type="number"]');
       firstQty?.focus();
+      return;
+    }
+    if (errors.length > 0) {
+      // Focus the first invalid input and prevent submit
+      const first = errors[0];
+      form.querySelector(`#qty-${first}`)?.focus();
       return;
     }
     // debugger

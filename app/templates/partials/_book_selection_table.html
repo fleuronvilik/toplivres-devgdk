@@ -1,0 +1,53 @@
+<div id="orders-tab" class="tab-pane active">
+  <div class="card">
+    <h3 id="books-empty-state" class="empty-state">Enter a quantity to begin</h3>
+    <!-- <p class="subtle-help">Select quantities and submit as an order or sales report.</p> -->
+    <div class="table-toolbar">
+      <label class="toggle">
+        <input type="checkbox" id="toggle-inline-errors" checked>
+        <span>Show inline errors while editing</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-selected-only">
+        <span>Show selected only</span>
+      </label>
+      <div class="table-search">
+        <input type="text" id="books-search" placeholder="Search titles" aria-label="Search titles">
+      </div>
+    </div>
+    <form id="operation-form" class="grid-form">
+      <div id="books-list">
+        <div class="table-scroll">
+        <table id="books-table" class="table">
+          <colgroup>
+            <col class="col-title">
+            <col class="col-price">
+            <col class="col-qty">
+            <col class="col-subtotal">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Unit Price</th>
+              <th class="qty-header">Qty</th>
+              <th class="subtotal-header">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody><!-- populated by JS --></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="text-align:right;font-weight:600;">Total:</td>
+              <td id="books-total-amount">$0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+        </div>
+      </div>
+      <div id="order-blocked-box" class="info-box hidden"></div>
+      <div id="order-actions" class="form-actions">
+        <button id="btn-place-order" type="submit" data-action="order" name="action" value="order" class="btn btn-submit">Place Order</button>
+        <button id="btn-report-sales" type="submit" data-action="sale" name="action" value="sale" class="btn btn-submit">Report Sales</button>
+      </div>
+    </form>
+  </div>
+</div>
