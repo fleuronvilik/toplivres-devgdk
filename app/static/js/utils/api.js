@@ -98,6 +98,7 @@ export async function loadBooks() {
     const price = Number(b.unit_price);
     const stock = stockByTitle[b.title] || 0;
     tr.id = `book-row-${b.id}`;
+    tr.classList.add('book-row');
     tr.innerHTML = `
       <td class="book-title">${b.title}</td>
       <td class="book-price" data-price="${price}">${fmt.format(price)}</td>
@@ -107,10 +108,13 @@ export async function loadBooks() {
           <input type="number" name="qty-${b.id}" id="qty-${b.id}" min="0" step="1" value="0" data-stock="${stock}" aria-describedby="err-${b.id}">
           <button type="button" class="qty-btn inc" aria-label="Increase quantity" data-target="qty-${b.id}">+</button>
         </div>
+        <div class="stock-hint">
+          <button type="button" class="stock-hint-btn" aria-label="Stock info" aria-describedby="stock-${b.id}" aria-expanded="false">i</button>
+          <span class="stock-tooltip" id="stock-${b.id}" role="tooltip">in stock: ${stock}</span>
+        </div>
         <div class="field-error" id="err-${b.id}"></div>
       </td>
       <td class="book-subtotal" data-subtotal-for="${b.id}">${fmt.format(0)}</td>
-      <td class="book-stock" data-stock-for="${b.id}">${stock}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -144,13 +148,20 @@ export async function loadBooks() {
         if (inlineEnabled && msg) qtyInput.setAttribute('aria-invalid', 'true');
         else qtyInput.removeAttribute('aria-invalid');
       }
-      if (qty > 0) selected++;
+      if (qty > 0) {
+        selected++;
+        tr.classList.add('show-stock-hint');
+      } else {
+        tr.classList.remove('show-stock-hint');
+      }
       total += subtotal;
     });
     const totalEl = document.getElementById('books-total-amount');
     if (totalEl) totalEl.textContent = fmt.format(total);
     const empty = document.getElementById('books-empty-state');
-    if (empty) empty.classList.toggle('hidden', selected > 0);
+    if (empty) {
+      empty.textContent = selected > 0 ? 'Adjust quantities as needed' : 'Enter a quantity to begin';
+    }
   }
 
   tbody.addEventListener('input', (e) => {
@@ -174,18 +185,32 @@ export async function loadBooks() {
     input.dataset.touched = 'true';
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  recalc();
-
-  // Stock column toggle
-  const toggle = document.getElementById('toggle-stock');
-  if (toggle && table) {
-    // Hide by default
-    table.classList.add('hide-stock');
-    toggle.checked = false;
-    toggle.addEventListener('change', () => {
-      table.classList.toggle('hide-stock', !toggle.checked);
+  tbody.addEventListener('click', (e) => {
+    const hintBtn = e.target.closest('.stock-hint-btn');
+    if (!hintBtn) return;
+    const row = hintBtn.closest('tr');
+    const hintWrap = hintBtn.closest('.stock-hint');
+    if (!hintWrap) return;
+    tbody.querySelectorAll('.stock-hint-btn[aria-expanded="true"]').forEach(btn => {
+      if (btn !== hintBtn) btn.setAttribute('aria-expanded', 'false');
     });
-  }
+    tbody.querySelectorAll('.stock-hint.is-open').forEach(el => {
+      if (el !== hintWrap) el.classList.remove('is-open');
+    });
+    const expanded = hintBtn.getAttribute('aria-expanded') === 'true';
+    const nextExpanded = expanded ? 'false' : 'true';
+    hintBtn.setAttribute('aria-expanded', nextExpanded);
+    hintWrap.classList.toggle('is-open', nextExpanded === 'true');
+    if (!row) return;
+    if (nextExpanded === 'true') {
+      row.classList.add('show-stock-hint');
+    } else {
+      const qtyInput = row.querySelector('input[type="number"]');
+      const qty = Number(qtyInput?.value || 0);
+      if (qty <= 0) row.classList.remove('show-stock-hint');
+    }
+  });
+  recalc();
 
   // Inline errors toggle
   const inlineToggle = document.getElementById('toggle-inline-errors');

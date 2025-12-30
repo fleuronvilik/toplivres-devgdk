@@ -1,13 +1,8 @@
 <div id="orders-tab" class="tab-pane active">
   <div class="card">
-    <h3>Select quantities and submit as an order or sales report.</h3>
-    <p id="books-empty-state" class="empty-state hidden">No items added. Enter a quantity to begin.</p>
+    <h3 id="books-empty-state" class="empty-state">Enter a quantity to begin</h3>
     <!-- <p class="subtle-help">Select quantities and submit as an order or sales report.</p> -->
     <div class="table-toolbar">
-      <label class="toggle">
-        <input type="checkbox" id="toggle-stock" aria-controls="books-table">
-        <span>Show stock</span>e
-      </label>
       <label class="toggle">
         <input type="checkbox" id="toggle-inline-errors" checked>
         <span>Show inline errors while editing</span>
@@ -22,7 +17,6 @@
             <col class="col-price">
             <col class="col-qty">
             <col class="col-subtotal">
-            <col class="col-stock">
           </colgroup>
           <thead>
             <tr>
@@ -30,7 +24,6 @@
               <th>Unit Price</th>
               <th class="qty-header">Qty</th>
               <th class="subtotal-header">Subtotal</th>
-              <th class="stock-header">Stock</th>
             </tr>
           </thead>
           <tbody><!-- populated by JS --></tbody>
@@ -38,7 +31,6 @@
             <tr>
               <td colspan="3" style="text-align:right;font-weight:600;">Total:</td>
               <td id="books-total-amount">$0.00</td>
-              <td></td>
             </tr>
           </tfoot>
         </table>

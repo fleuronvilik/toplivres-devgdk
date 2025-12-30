@@ -258,7 +258,6 @@ img {
 #books-table .col-qty { width: 250px; }
 #books-table .col-subtotal { width: 140px; }
 #books-table .col-price { width: 120px; }
-#books-table .col-stock { width: 100px; }
 
 /* Reserve vertical space for inline error; avoid width growth */
 /* .book-qty .field-error { min-height: 1.2em; white-space: normal; word-break: break-word; } */
@@ -286,14 +285,64 @@ img {
   background-color: #e3f2fd;
 }
 
-/* Hide stock column when toggled */
-.table.hide-stock th.stock-header,
-.table.hide-stock td.book-stock {
-  display: none;
+/* Contextual stock hint */
+.stock-hint {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
 }
 
-/* When stock hidden, collapse its col width so the table still spans full width */
-.table.hide-stock col.col-stock { width: 0 !important; }
+.stock-hint-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: #f2f2f2;
+  color: var(--color-text-light);
+  font-size: 11px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.stock-tooltip {
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  background: #2f2f2f;
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.stock-hint-btn:hover + .stock-tooltip,
+.stock-hint-btn:focus + .stock-tooltip,
+.stock-hint-btn[aria-expanded="true"] + .stock-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+#books-table tbody tr.show-stock-hint .stock-hint,
+#books-table tbody tr:hover .stock-hint,
+#books-table tbody tr:focus-within .stock-hint,
+.stock-hint.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
 
 /* =========================
    Dashboards
