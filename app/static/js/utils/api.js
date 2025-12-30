@@ -151,16 +151,22 @@ export async function loadBooks() {
       if (qty > 0) {
         selected++;
         tr.classList.add('show-stock-hint');
+        tr.classList.add('has-qty');
       } else {
         tr.classList.remove('show-stock-hint');
+        tr.classList.remove('has-qty');
       }
       total += subtotal;
     });
+    const selectedToggle = document.getElementById('toggle-selected-only');
+    if (selectedToggle) {
+      tbody.classList.toggle('selected-only', selectedToggle.checked);
+    }
     const totalEl = document.getElementById('books-total-amount');
     if (totalEl) totalEl.textContent = fmt.format(total);
     const empty = document.getElementById('books-empty-state');
     if (empty) {
-      empty.textContent = selected > 0 ? 'Adjust quantities as needed' : 'Enter a quantity to begin';
+      empty.textContent = selected > 0 ? 'Adjust quantities as needed' : 'Enter quantity to begin';
     }
   }
 
@@ -216,6 +222,10 @@ export async function loadBooks() {
   const inlineToggle = document.getElementById('toggle-inline-errors');
   if (inlineToggle) {
     inlineToggle.addEventListener('change', () => recalc());
+  }
+  const selectedToggle = document.getElementById('toggle-selected-only');
+  if (selectedToggle) {
+    selectedToggle.addEventListener('change', () => recalc());
   }
 
   // Check order-block condition: if there is a pending order, block new order placement

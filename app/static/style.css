@@ -285,6 +285,11 @@ img {
   background-color: #e3f2fd;
 }
 
+/* Show selected only toggle */
+#books-table tbody.selected-only tr:not(.has-qty) {
+  display: none;
+}
+
 /* Contextual stock hint */
 .stock-hint {
   margin-top: 4px;
