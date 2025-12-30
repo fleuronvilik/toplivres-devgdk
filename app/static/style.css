@@ -290,6 +290,11 @@ img {
   display: none;
 }
 
+/* Search filter */
+#books-table tbody tr.search-hidden {
+  display: none;
+}
+
 /* Contextual stock hint */
 .stock-hint {
   margin-top: 4px;
@@ -457,9 +462,25 @@ img {
   align-items: center;
   gap: 12px;
   margin: 6px 0 12px;
+  flex-wrap: wrap;
 }
 
 .toggle input { margin-right: 6px; }
+
+.table-search {
+  display: flex;
+  margin-left: auto;
+  flex: 1 1 240px;
+  justify-content: flex-end;
+}
+
+.table-search input[type="text"] {
+  width: min(520px, 100%);
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+}
 
 .empty-state {
   margin-top: 10px;

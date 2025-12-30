@@ -97,10 +97,12 @@ export async function loadBooks() {
     const tr = document.createElement('tr');
     const price = Number(b.unit_price);
     const stock = stockByTitle[b.title] || 0;
+    const titleText = String(b.title || '');
     tr.id = `book-row-${b.id}`;
     tr.classList.add('book-row');
+    tr.dataset.title = titleText.toLowerCase();
     tr.innerHTML = `
-      <td class="book-title">${b.title}</td>
+      <td class="book-title">${titleText}</td>
       <td class="book-price" data-price="${price}">${fmt.format(price)}</td>
       <td class="book-qty">
         <div class="qty-control">
@@ -217,6 +219,19 @@ export async function loadBooks() {
     }
   });
   recalc();
+
+  const searchInput = document.getElementById('books-search');
+  function applySearchFilter() {
+    const query = (searchInput?.value || '').trim().toLowerCase();
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const title = tr.dataset.title || '';
+      const match = !query || title.includes(query);
+      tr.classList.toggle('search-hidden', !match);
+    });
+  }
+  if (searchInput) {
+    searchInput.addEventListener('input', () => applySearchFilter());
+  }
 
   // Inline errors toggle
   const inlineToggle = document.getElementById('toggle-inline-errors');
