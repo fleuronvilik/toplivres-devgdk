@@ -50,6 +50,9 @@ export const fr = {
       submitSale: "Enregistrer la vente",
       cancelPending: "Annuler la demande en cours",
       cancel: "Annuler",
+      approve: "Approuver",
+      deliver: "Marquer comme livrée",
+      reject: "Rejeter",
     },
 
     validation: {
@@ -91,14 +94,14 @@ export const fr = {
   enums: {
     operationType: {
       order: "Commande",
-      report: "Vente", // ou "Déclaration de vente"
+      report: "Rapport de vente", // ou "Déclaration de vente"
     },
     operationStatus: {
       pending: "En attente",
-      approved: "Confirmée",       // suggestion (voir note plus bas)
+      approved: "En cours de livraison", //"Approuvée",
       delivered: "Livrée",
       cancelled: "Annulée",
-      recorded: "Enregistrée",     // pour report
+      recorded: "—",     // pour report
       rejected: "Refusée",         // optionnel
       expired: "Expirée",          // optionnel si auto-annulation
     },

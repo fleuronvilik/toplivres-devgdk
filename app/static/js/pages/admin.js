@@ -21,6 +21,25 @@ export async function mountAdmin(loaded) {
                 adminOpsTable, 'click', 'button[data-action]', async (e) => {
                     const id = e.target.dataset.id;
                     const action = e.target.dataset.action;
+                    const status = e.target.dataset.status;
+                    const type = e.target.dataset.type;
+                    let message = "";
+                    if (action === "confirm") {
+                        if (status === "approved") {
+                            message = "Marquer cette commande comme livrée ?";
+                        } else {
+                            message = "Approuver cette commande ?";
+                        }
+                    } else if (action === "delete") {
+                        if (status === "delivered") {
+                            message = "Annuler cette opération ?";
+                        } else if (type === "report") {
+                            message = "Annuler ce rapport de vente ? Cela impactera le stock et les statistiques.";
+                        } else {
+                            message = "Annuler cette opération ?";
+                        }
+                    }
+                    if (message && !window.confirm(message)) return;
                     if (action === "confirm") {
                         await apiFetch(`/api/admin/orders/${id}/confirm`, { method: "PUT" });
                     } else if (action === "delete") {

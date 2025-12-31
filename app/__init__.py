@@ -73,7 +73,7 @@ template = {
             "properties": {
                 "id": {"type": "integer"},
                 "type": {"type": "string", "enum": ["order","report"]},
-                "status": {"type": "string", "enum": ["pending","delivered","cancelled","recorded"]},
+                "status": {"type": "string", "enum": ["pending","approved","delivered","cancelled","recorded"]},
                 "date": {"type": "string", "format": "date-time"},
                 "customer": {"$ref": "#/definitions/Customer"}, #"customer_id": {"type": "integer"},
                 "items": {

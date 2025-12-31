@@ -49,6 +49,19 @@ export async function loadAdminOperations() {
   const tbody = document.getElementById("admin-ops-table").querySelector("tbody");
   tbody.innerHTML = "";
   ops.forEach(op => {
+    let actionMarkup = "";
+    let cancelMarkup = "";
+    if (op.type === "order") {
+      if (op.status === "pending") {
+        actionMarkup = `<button data-action="confirm" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-accent">${fr.form.actions.approve}</button>`;
+        cancelMarkup = `<button data-action="delete" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${fr.form.actions.reject}</button>`;
+      } else if (op.status === "approved") {
+        actionMarkup = `<button data-action="confirm" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-accent">${fr.form.actions.deliver}</button>`;
+        cancelMarkup = `<button data-action="delete" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${fr.form.actions.cancel}</button>`;
+      }
+    } else if (op.type === "report" && op.status !== "cancelled") {
+      actionMarkup = `<button data-action="delete" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${fr.form.actions.cancel}</button>`;
+    }
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${op.id}</td>
@@ -57,9 +70,10 @@ export async function loadAdminOperations() {
       <td>${formatType(op.type || '')}</td>
       <td>${formatStatus(op.status || '')}</td>
       <td>
-        <button class="viewItemsBtn btn">Voir les articles</button>
-        ${op.status !== "cancelled" ? `<button data-action="delete" data-id="${op.id}" class="btn btn-danger">${fr.form.actions.cancel}</button>` : ""}
-        ${op.type === "order" && op.status === "pending" ? `<button data-action=\"confirm\" data-id=\"${op.id}\" class=\"btn btn-accent\">Confirmer</button>` : ""}
+        <div class="table-actions">
+          <button class="viewItemsBtn btn">Voir les articles</button>
+          ${cancelMarkup}${actionMarkup}
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -349,7 +363,7 @@ export async function loadCustomerOrders(typeFilter = "") {
       <td>${formatStatus(op.status || '')}</td>
       <td>
         <button class="viewItemsBtn btn">Voir les articles</button>
-        ${op.type === "order" && op.status === "pending"
+        ${op.status === "pending"
         ? `<button data-id="${op.id}" class="cancelBtn btn btn-danger">Annuler</button>`
         : ""}
       </td>

@@ -25,7 +25,7 @@ def can_request_delivery(user_id):
     last_delivery = (
         Operation.query
         .filter_by(customer_id=user_id)
-        .filter(and_(Operation.type == 'order', Operation.status.in_(['pending', 'delivered'])))
+        .filter(and_(Operation.type == 'order', Operation.status.in_(['pending', 'approved', 'delivered'])))
         .order_by(Operation.id.desc())  # Operation.date.desc()
         .first()
     )

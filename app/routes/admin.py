@@ -16,21 +16,21 @@ def confirm_order(order_id: int):
     Admin confirm order
     """
     order = Operation.query.get(order_id)
-    if not order or not (order.type == 'order' and order.status == 'pending'):
-        return error_response("Order not found or not pending", 404, "order")
-    
-    # Transition to delivered (normalized + back-compat)
-    order.status = "delivered"
+    if not order or order.type != 'order' or order.status not in ('pending', 'approved'):
+        return error_response("Order not found or not pending/approved", 404, "order")
+
+    next_status = "approved" if order.status == "pending" else "delivered"
+    order.status = next_status
     order.type = 'order'
     db.session.commit()
     log_event(
-        "order confirmed",
+        f"order {next_status}",
         order_id=order.id,
         customer_id=order.customer.id,
         customer=order.customer.email,
         books_count=sum(item.quantity for item in order.items)
     )
-    return jsonify({"msg": "Order confirmed"}), 200
+    return jsonify({"msg": f"Order {next_status}"}), 200
 
 
 @admin_bp.route("/operations/<int:operation_id>", methods=["DELETE"])
@@ -40,14 +40,15 @@ def delete_operation(operation_id):
     op = Operation.query.get(operation_id)
     if not op:
         return error_response("Order or Report not found", 404, "operation")    
-    if (op.type == 'order' and op.status == 'delivered'):
+    if (op.type == 'order' and op.status != 'cancelled'):
         op.status = "cancelled"
         db.session.commit()
         return OperationSchema().dump(op), 200
     
-    db.session.delete(op)
-    db.session.commit()
-    return "", 204
+    if op.type == 'report':
+        db.session.delete(op)
+        db.session.commit()
+        return "", 204
 
 
 @admin_bp.route("/operations", methods=["GET"])

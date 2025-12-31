@@ -106,7 +106,7 @@ class Operation(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     # New normalized fields
     type = db.Column(db.String(10), nullable=False, default="order")  # 'order' | 'report'
-    status = db.Column(db.String(12), nullable=True, default="pending")  # orders: pending|delivered|cancelled; reports: recorded
+    status = db.Column(db.String(12), nullable=True, default="pending")  # orders: pending|approved|delivered|cancelled; reports: recorded
     date = db.Column(db.Date, nullable=False, default=date.today)
 
     # relationships

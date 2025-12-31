@@ -227,12 +227,12 @@ def get_history():
         if (request.args):
             filter_type = request.args["type"]
             if filter_type == "order":
-                query = query.filter(and_(Operation.type == 'order', Operation.status.in_(["pending", "delivered"])))
+                query = query.filter(and_(Operation.type == 'order', Operation.status.in_(["pending", "approved", "delivered"])))
             elif filter_type == "report":
                 query = query.filter(Operation.type == 'report')
-            else:
+            # else:
                 # All except cancelled orders
-                query = query.filter(or_(Operation.type == 'report', and_(Operation.type == 'order', Operation.status != 'cancelled')))
+                # query = query.filter(or_(Operation.type == 'report', and_(Operation.type == 'order', Operation.status != 'cancelled')))
         schema = OperationSchema(many=True)
         return jsonify({"data": schema.dump(query.all())}), 200
 
