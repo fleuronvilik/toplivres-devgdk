@@ -1,17 +1,17 @@
 <div id="orders-tab" class="tab-pane active">
 <!-- <img src="/static/banner.jpeg"> -->
 <div class="card">
-    <h3>Request new delivery or send a sales report</h3>
+    <h3>Demander une livraison ou déclarer une vente</h3>
     <!--
-      <button class="collapse-toggle btn btn-primary">New Order / Sale ▼</button>
+      <button class="collapse-toggle btn btn-primary">Nouvelle opération ▼</button>
       -->
     <form id="operation-form" class="grid-form">
         <div id="books-list"><!-- Populated by JS --></div>
-        <p id="books-empty-state" class="empty-state hidden">Select items with quantities > 0.</p>
+        <p id="books-empty-state" class="empty-state hidden">Sélectionne des articles avec une quantité > 0.</p>
         <div id="order-blocked-box" class="hidden" role="status" aria-live="polite"></div>
         <div class="form-actions">
-            <button type="submit" data-action="order" name="action" value="order" class="btn btn-submit">Submit Order</button>
-            <button type="submit" data-action="sale" name="action" value="sale" class="btn btn-submit">Report Sale</button>
+            <button type="submit" data-action="order" name="action" value="order" class="btn btn-submit">Envoyer la commande</button>
+            <button type="submit" data-action="sale" name="action" value="sale" class="btn btn-submit">Enregistrer la vente</button>
         </div>
     </form>
 </div>

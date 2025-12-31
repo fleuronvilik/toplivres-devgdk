@@ -69,7 +69,7 @@ export function bindUserMenu(navRoot = $("#customer-navigation")) {
         form.addEventListener('input', onInput);
         unbinds.push(() => form.removeEventListener('input', onInput));
       } catch (e) {
-        notify('Unable to load profile', 'error');
+        notify('Impossible de charger le profil', 'error');
       }
       show(modal);
     };
@@ -106,10 +106,10 @@ export function bindUserMenu(navRoot = $("#customer-navigation")) {
         // Update greeting if present
         const nameEl = document.getElementById('customer-name');
         if (nameEl && updated.name) nameEl.textContent = updated.name;
-        notify('Profile updated');
+        notify('Profil mis à jour');
         hide(modal);
       } catch (err) {
-        notify('Update failed', 'error');
+        notify('Échec de la mise à jour', 'error');
         saveBtn.disabled = false;
       }
     };

@@ -1,21 +1,21 @@
 <nav id="customer-navigation" class="hidden">
   <div class="nav-bar">
     <div class="tabs">
-      <button class="tab-link active" data-tab="orders">New Order / Sale</button>
-      <button class="tab-link" data-tab="history">History</button>
-      <button class="tab-link" data-tab="inventory">Inventory</button>
-      <button class="tab-link" data-tab="stats">Sales Stats</button>
+      <button class="tab-link active" data-tab="orders">Nouvelle opération</button>
+      <button class="tab-link" data-tab="history">Historique</button>
+      <button class="tab-link" data-tab="inventory">Ton stock</button>
+      <button class="tab-link" data-tab="stats">Statistiques</button>
     </div>
     <div class="user-menu">
       <button class="menu-toggle btn" aria-haspopup="menu" aria-expanded="false">
         <span id="user-initials" aria-hidden="true">👤</span>
-        <span class="sr-only">Open user menu</span>
+        <span class="sr-only">Ouvrir le menu utilisateur</span>
       </button>
       <div class="dropdown-menu hidden" role="menu">
-        <button id="open-settings" class="dropdown-item" role="menuitem">Settings</button>
-        <button id="logoutLink" class="dropdown-item" role="menuitem">Log out</button>
+        <button id="open-settings" class="dropdown-item" role="menuitem">Paramètres</button>
+        <button id="logoutLink" class="dropdown-item" role="menuitem">Se déconnecter</button>
       </div>
     </div>
   </div>
-  <div id="alerts" class="hidden"></div>
+  <div id="alerts" class="hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 </nav>

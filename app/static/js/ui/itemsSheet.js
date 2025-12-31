@@ -14,7 +14,7 @@ export function openItemsSheet(items = []) {
     const li = document.createElement('li');
     li.className = 'items-list-row';
     const qty = it.quantity < 0 ? -it.quantity : it.quantity;
-    const title = it.book || it.title || `Book #${it.book_id}`;
+    const title = it.book || it.title || `Livre #${it.book_id}`;
     li.textContent = `${qty}× ${title}`;
     list.appendChild(li);
   });
@@ -33,7 +33,6 @@ export function bindItemsSheet() {
 
 function pretty(i) {
   const qty = i.quantity < 0 ? -i.quantity : i.quantity;
-  const title = i.book || i.title || `Book #${i.book_id}`;
+  const title = i.book || i.title || `Livre #${i.book_id}`;
   return `${qty}× ${title}`;
 }
-

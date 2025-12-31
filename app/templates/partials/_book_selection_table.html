@@ -1,18 +1,18 @@
 <div id="orders-tab" class="tab-pane active">
   <div class="card">
-    <h3 id="books-empty-state" class="empty-state">Enter a quantity to begin</h3>
+    <h3 id="books-empty-state" class="empty-state">Saisis une quantité pour commencer.</h3>
     <!-- <p class="subtle-help">Select quantities and submit as an order or sales report.</p> -->
     <div class="table-toolbar">
       <label class="toggle">
         <input type="checkbox" id="toggle-inline-errors" checked>
-        <span>Show inline errors while editing</span>
+        <span>Afficher les erreurs dans la liste</span>
       </label>
       <label class="toggle">
         <input type="checkbox" id="toggle-selected-only">
-        <span>Show selected only</span>
+        <span>Afficher seulement la sélection</span>
       </label>
       <div class="table-search">
-        <input type="text" id="books-search" placeholder="Search titles" aria-label="Search titles">
+        <input type="text" id="books-search" placeholder="Rechercher un livre…" aria-label="Rechercher un livre">
       </div>
     </div>
     <form id="operation-form" class="grid-form">
@@ -27,17 +27,17 @@
           </colgroup>
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Unit Price</th>
-              <th class="qty-header">Qty</th>
-              <th class="subtotal-header">Subtotal</th>
+              <th>Livre</th>
+              <th>Prix unitaire</th>
+              <th class="qty-header">Quantité</th>
+              <th class="subtotal-header">Sous-total</th>
             </tr>
           </thead>
           <tbody><!-- populated by JS --></tbody>
           <tfoot>
             <tr>
-              <td colspan="3" style="text-align:right;font-weight:600;">Total:</td>
-              <td id="books-total-amount">$0.00</td>
+              <td colspan="3" style="text-align:right;font-weight:600;">Total :</td>
+              <td id="books-total-amount">0,00 €</td>
             </tr>
           </tfoot>
         </table>
@@ -45,8 +45,8 @@
       </div>
       <div id="order-blocked-box" class="info-box hidden"></div>
       <div id="order-actions" class="form-actions">
-        <button id="btn-place-order" type="submit" data-action="order" name="action" value="order" class="btn btn-submit">Place Order</button>
-        <button id="btn-report-sales" type="submit" data-action="sale" name="action" value="sale" class="btn btn-submit">Report Sales</button>
+        <button id="btn-place-order" type="submit" data-action="order" name="action" value="order" class="btn btn-submit">Envoyer la commande</button>
+        <button id="btn-report-sales" type="submit" data-action="sale" name="action" value="sale" class="btn btn-submit">Enregistrer la vente</button>
       </div>
     </form>
   </div>

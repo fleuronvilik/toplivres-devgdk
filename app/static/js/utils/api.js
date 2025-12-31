@@ -1,4 +1,5 @@
 import { $, getCSRF, decodeRole } from "./dom.js";
+import { fr, formatCurrency, formatType, formatStatus } from "../i18n/fr.js";
 import { openItemsSheet } from "../ui/itemsSheet.js";
 import { notify } from "../core/notifications.js";
 
@@ -32,7 +33,7 @@ export async function apiFetch(path, options = {}) {
   
   if (!res.ok) {
     // Throw a *rich* error so UI can decide what to do.
-    const err = new Error("API Request failed");
+    const err = new Error("Échec de la requête API");
     err.status = res.status;
     err.payload = data;
     err.url = res.url;
@@ -53,12 +54,12 @@ export async function loadAdminOperations() {
       <td>${op.id}</td>
       <td>${op.date}</td>
       <td><a href="/admin/users/${op.customer.id}">${op.customer.name || ""}</a></td>
-      <td>${op.type || ''}</td>
-      <td>${op.status || ''}</td>
+      <td>${formatType(op.type || '')}</td>
+      <td>${formatStatus(op.status || '')}</td>
       <td>
-        <button class="viewItemsBtn btn">View items</button>
-        <button data-action="delete" data-id="${op.id}" class="btn btn-danger">Delete</button>
-        ${op.type === "order" && op.status === "pending" ? `<button data-action=\"confirm\" data-id=\"${op.id}\" class=\"btn btn-accent\">Confirm</button>` : ""}
+        <button class="viewItemsBtn btn">Voir les articles</button>
+        <button data-action="delete" data-id="${op.id}" class="btn btn-danger">Supprimer</button>
+        ${op.type === "order" && op.status === "pending" ? `<button data-action=\"confirm\" data-id=\"${op.id}\" class=\"btn btn-accent\">Confirmer</button>` : ""}
       </td>
     `;
     tbody.appendChild(tr);
@@ -90,7 +91,6 @@ export async function loadBooks() {
 
   // Clear and populate rows
   tbody.innerHTML = "";
-  const fmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'EUR' });
   books.data.forEach(b => {
     const tr = document.createElement('tr');
     const price = Number(b.unit_price);
@@ -101,20 +101,20 @@ export async function loadBooks() {
     tr.dataset.title = titleText.toLowerCase();
     tr.innerHTML = `
       <td class="book-title">${titleText}</td>
-      <td class="book-price" data-price="${price}">${fmt.format(price)}</td>
+      <td class="book-price" data-price="${price}">${formatCurrency(price)}</td>
       <td class="book-qty">
         <div class="qty-control">
-          <button type="button" class="qty-btn dec" aria-label="Decrease quantity" data-target="qty-${b.id}">−</button>
+          <button type="button" class="qty-btn dec" aria-label="Diminuer la quantité" data-target="qty-${b.id}">−</button>
           <input type="number" name="qty-${b.id}" id="qty-${b.id}" min="0" step="1" value="0" data-stock="${stock}" aria-describedby="err-${b.id}">
-          <button type="button" class="qty-btn inc" aria-label="Increase quantity" data-target="qty-${b.id}">+</button>
+          <button type="button" class="qty-btn inc" aria-label="Augmenter la quantité" data-target="qty-${b.id}">+</button>
         </div>
         <div class="stock-hint">
-          <button type="button" class="stock-hint-btn" aria-label="Stock info" aria-describedby="stock-${b.id}" aria-expanded="false">i</button>
-          <span class="stock-tooltip" id="stock-${b.id}" role="tooltip">in stock: ${stock}</span>
+          <button type="button" class="stock-hint-btn" aria-label="Info stock" aria-describedby="stock-${b.id}" aria-expanded="false">i</button>
+          <span class="stock-tooltip" id="stock-${b.id}" role="tooltip">${fr.form.hints.inStock(stock)}</span>
         </div>
         <div class="field-error" id="err-${b.id}"></div>
       </td>
-      <td class="book-subtotal" data-subtotal-for="${b.id}">${fmt.format(0)}</td>
+      <td class="book-subtotal" data-subtotal-for="${b.id}">${formatCurrency(0)}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -132,17 +132,17 @@ export async function loadBooks() {
       const qty = Number(qtyInput?.value || 0);
       const stock = Number(qtyInput?.dataset.stock || 0);
       const subtotal = price * qty;
-      if (subCell) subCell.textContent = fmt.format(subtotal);
+      if (subCell) subCell.textContent = formatCurrency(subtotal);
       if (qtyInput && errCell) {
         const inlineToggle = document.getElementById('toggle-inline-errors');
         const inlineEnabled = inlineToggle ? inlineToggle.checked : true;
         let msg = '';
         if (qty < 0) {
-          msg = 'Must be greater than or equal to 0';
+          msg = fr.form.validation.nonNegative;
         } else if (qty === 0 && qtyInput.dataset.touched === 'true') {
-          msg = 'Enter a positive quantity';
+          msg = fr.form.validation.positive;
         } else if (qty > stock) {
-          msg = `Exceeds available stock (max ${stock})`;
+          msg = fr.form.validation.exceedsStock(stock);
         }
         errCell.textContent = inlineEnabled ? msg : '';
         if (inlineEnabled && msg) qtyInput.setAttribute('aria-invalid', 'true');
@@ -163,10 +163,10 @@ export async function loadBooks() {
       tbody.classList.toggle('selected-only', selectedToggle.checked);
     }
     const totalEl = document.getElementById('books-total-amount');
-    if (totalEl) totalEl.textContent = fmt.format(total);
+    if (totalEl) totalEl.textContent = formatCurrency(total);
     const empty = document.getElementById('books-empty-state');
     if (empty) {
-      empty.textContent = selected > 0 ? 'Adjust quantities as needed' : 'Enter quantity to begin';
+      empty.textContent = selected > 0 ? fr.form.helperSelected : fr.form.helperIdle;
     }
   }
 
@@ -244,13 +244,13 @@ export async function loadBooks() {
   await refreshOrderBlockedState();
 }
 
-export function setOrderBlockedState(blocked, message = "You already have a pending request.") {
+export function setOrderBlockedState(blocked, message = fr.form.states.cannotOrderPending) {
   const box = document.getElementById("order-blocked-box");
   const btnOrder = document.querySelector('#operation-form button[data-action="order"]');
   const form = document.getElementById("operation-form");
   if (blocked) {
     if (box) {
-      box.textContent = message || "You already have a pending request.";
+      box.textContent = message || fr.form.states.cannotOrderPending;
       box.classList.remove("hidden");
     }
     if (btnOrder) {
@@ -278,7 +278,7 @@ export async function refreshOrderBlockedState() {
   try {
     const res = await apiFetch("/api/operations?type=order");
     const hasPending = (res.data || []).some(op => op.status === "pending");
-    setOrderBlockedState(hasPending, hasPending ? "You already have a pending request." : "");
+    setOrderBlockedState(hasPending, hasPending ? fr.form.states.cannotOrderPending : "");
   } catch (_) {
     // Ignore; don't block ordering on a transient fetch error.
   }
@@ -292,7 +292,6 @@ function resolveTargetCustomerId() {
     const cid = detailRoot?.dataset?.customerId;
     if (cid) return cid;
   }
-  console.log(current)
   return current?.id;
 }
 
@@ -301,36 +300,57 @@ export async function loadInventory() {
   const res = await apiFetch(`/api/users/inventory?id=${customerId}`);
 
   const tbody = document.querySelector("#customer-inventory-table tbody");
+  const table = document.getElementById("customer-inventory-table");
+  const empty = document.getElementById("inventory-empty-state");
   tbody.innerHTML = "";
-  res.data.forEach(book => {
+  let count = 0;
+  (res.data || []).forEach(book => {
+    if (!book.stock) return;
     const tr = document.createElement("tr");
-    if (book.stock) {
-      tr.innerHTML = `
-          <td>${book.title}</td>
-          <td>${book.stock}</td>
-        `;       // <td>${op.items.map(i => `${i.book_id} x${i.quantity}`).join(", ")}</td>
-    }
+    tr.innerHTML = `
+        <td>${book.title}</td>
+        <td>${book.stock}</td>
+      `;       // <td>${op.items.map(i => `${i.book_id} x${i.quantity}`).join(", ")}</td>
+    count += 1;
     tbody.appendChild(tr);
   });
+  if (count === 0) {
+    if (empty) empty.classList.remove("hidden");
+    if (table) table.classList.add("hidden");
+  } else {
+    if (empty) empty.classList.add("hidden");
+    if (table) table.classList.remove("hidden");
+  }
 }
 
 export async function loadCustomerOrders(typeFilter = "") {
   // if (loginForm) loginForm.parentNode.classList.add("hidden");
   const res = await apiFetch(`/api/operations?type=${typeFilter}`); // assumes Option A endpoints
+  const table = document.getElementById("orders-table");
   const tbody = document.querySelector("#orders-table tbody");
+  const empty = document.getElementById("history-empty-state");
   tbody.innerHTML = "";
 
-  res.data.forEach(op => {
+  const rows = res.data || [];
+  if (rows.length === 0) {
+    if (empty) empty.classList.remove("hidden");
+    if (table) table.classList.add("hidden");
+    return;
+  }
+  if (empty) empty.classList.add("hidden");
+  if (table) table.classList.remove("hidden");
+
+  rows.forEach(op => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${op.id}</td>
       <td>${op.date}</td>
-      <td>${op.type || ''}</td>
-      <td>${op.status || ''}</td>
+      <td>${formatType(op.type || '')}</td>
+      <td>${formatStatus(op.status || '')}</td>
       <td>
-        <button class="viewItemsBtn btn">View items</button>
+        <button class="viewItemsBtn btn">Voir les articles</button>
         ${op.type === "order" && op.status === "pending"
-        ? `<button data-id="${op.id}" class="cancelBtn btn btn-danger">Cancel</button>`
+        ? `<button data-id="${op.id}" class="cancelBtn btn btn-danger">Annuler</button>`
         : ""}
       </td>
     `;
@@ -339,40 +359,83 @@ export async function loadCustomerOrders(typeFilter = "") {
   });
 }
 
-export async function loadStats(salesChart) {
+export async function loadStats() {
   const customerId = resolveTargetCustomerId();
-  const res = await apiFetch(`/api/users/${customerId}/stats`)
-  const data = res.data;
+  const res = await apiFetch(`/api/users/${customerId}/stats`);
+  const data = res.data || {};
 
-  if (!salesChart) {
-    const ctx = document.getElementById("sales-chart").getContext("2d");
-    salesChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: ["Total Sales", "Delivered"],
-            datasets: [{
-                label: "Sales Performance",
-                data: [data.total_sales, data.total_delivered],
-                backgroundColor: [
-                    data.delivery_ratio < 0.7 ? "red" : "green",
-                    "blue"
-                ]
-            }]
-        }
-    });
-  } else {
-    // 🔄 Update data only
-    salesChart.data.datasets[0].data = [
-        data.total_sales,
-        data.total_delivered
-    ];
-    salesChart.data.datasets[0].backgroundColor[0] =
-        data.delivery_ratio < 0.7 ? "red" : "green";
-    salesChart.update();
+  // Safe numbers
+  const totalSales = Number(data.total_sales ?? 0);
+  const totalDelivered = Number(data.total_delivered ?? 0);
+  const totalAmount = Number(data.total_amount ?? 0);
+  const ratio = Number(data.delivery_ratio ?? 0); // 0.3 means 30%
+
+  // Helpers
+  const ratioPct = Math.round(ratio * 100); // 30
+  const clampedPct = Math.max(0, Math.min(100, ratioPct));
+
+  const formattedAmount = formatCurrency(totalAmount);
+
+  const empty = document.getElementById("stats-empty-state");
+  const grid = document.getElementById("stats-grid");
+  const footer = document.getElementById("stats-footer");
+  const hasData = totalSales > 0 || totalDelivered > 0 || totalAmount > 0;
+  if (!hasData) {
+    if (empty) empty.classList.remove("hidden");
+    if (grid) grid.classList.add("hidden");
+    if (footer) footer.classList.add("hidden");
+    return;
   }
+  if (empty) empty.classList.add("hidden");
+  if (grid) grid.classList.remove("hidden");
+  if (footer) footer.classList.remove("hidden");
 
-  document.getElementById("total-sales").textContent = `${data.total_sales}`; 
-  document.getElementById("total-revenue").textContent = `$${data.total_amount}`;
+  // Update KPIs
+  const elSales = document.getElementById("total-sales");
+  if (elSales) elSales.textContent = String(totalSales);
+
+  const elDelivered = document.getElementById("total-delivered");
+  if (elDelivered) elDelivered.textContent = String(totalDelivered);
+
+  const elRevenue = document.getElementById("total-revenue");
+  if (elRevenue) elRevenue.textContent = formattedAmount;
+
+  const elRatio = document.getElementById("delivery-ratio");
+  if (elRatio) elRatio.textContent = `${ratioPct}%`;
+
+  // Helper line
+  const elHelper = document.getElementById("stats-helper");
+  if (elHelper) elHelper.textContent = fr.stats.ratioLine(totalSales, totalDelivered, ratioPct);
+
+  // Progress bar
+  const elProgress = document.getElementById("stats-progress");
+  if (elProgress) elProgress.style.width = `${clampedPct}%`;
+
+  // Status pill
+  const elStatus = document.getElementById("stats-status");
+  if (elStatus) {
+    // reset classes
+    elStatus.classList.remove("ok", "warn", "bad");
+
+    // Avoid weird messaging when delivered is 0
+    if (totalDelivered === 0) {
+      elStatus.classList.add("warn");
+      elStatus.textContent = "Aucune livraison enregistrée pour l’instant.";
+      return;
+    }
+
+    const target = 0.30; // 30%
+    if (ratio >= target) {
+      elStatus.classList.add("ok");
+      elStatus.textContent = `Bon rythme de vente ✅ (objectif ${Math.round(target * 100)}%)`;
+    } else if (ratio >= 0.15) {
+      elStatus.classList.add("warn");
+      elStatus.textContent = `Rythme moyen ⚠️ (objectif ${Math.round(target * 100)}%)`;
+    } else {
+      elStatus.classList.add("bad");
+      elStatus.textContent = `Rythme à améliorer ⛔ (objectif ${Math.round(target * 100)}%)`;
+    }
+  }
 }
 
 

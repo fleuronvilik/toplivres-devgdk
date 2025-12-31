@@ -1,3 +1,5 @@
+import { fr } from "../i18n/fr.js";
+
 const DEFAULT_TIMEOUT_MS = 6000;
 const MAX_TOASTS = 4; // Keep the stack readable by limiting visible toasts.
 // Persist toast state across module re-evaluations (e.g., hot reloads).
@@ -25,7 +27,7 @@ function renderToasts() {
     const close = document.createElement('button');
     close.type = 'button';
     close.className = 'alert-close';
-    close.setAttribute('aria-label', 'Close alert');
+    close.setAttribute('aria-label', 'Fermer l’alerte');
     close.textContent = '×';
     close.addEventListener('click', () => {
       // Manual dismiss removes immediately.
@@ -127,7 +129,7 @@ export function showErrors(err) {
 
   // If nothing parsed, give one safe toast.
   if (errors.length === 0) {
-    const msg = status ? `Request failed (${status})` : "Request failed";
+    const msg = status ? `Échec de la requête (${status})` : fr.errors.generic;
     notify(msg, "error");
     return;
   }

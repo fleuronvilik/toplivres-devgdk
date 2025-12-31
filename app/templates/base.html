@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="UTF-8">
@@ -9,13 +9,13 @@
 </head>
 
   <body>
-    <a class="skip-link" href="#main">Skip to main content</a>
+    <a class="skip-link" href="#main">Aller au contenu principal</a>
     {% if role == 'admin' %}
     <nav id="admin-nav" class="nav">
       <div class="container">
-        <a href="/admin" class="nav-link">Operations</a>
-        <a href="/" class="nav-link">Books</a>
-        <a href="#" id="logoutLink" class="nav-link">Logout</a>
+        <a href="/admin" class="nav-link">Opérations</a>
+        <a href="/" class="nav-link">Livres</a>
+        <a href="#" id="logoutLink" class="nav-link">Se déconnecter</a>
       </div>
     </nav>
     {% endif %}
@@ -23,9 +23,9 @@
         {% if not role %}
         <div id="login-section" class="hidden">
             <form id="loginForm" class="card">
-                <label>Email: <input type="email" name="email" required></label>
-                <label>Password: <input type="password" name="password" required></label>
-                <button type="submit" class="btn btn-submit">Login</button>
+                <label>Email : <input type="email" name="email" required></label>
+                <label>Mot de passe : <input type="password" name="password" required></label>
+                <button type="submit" class="btn btn-submit">Se connecter</button>
             </form>
         </div>
         {% else %}

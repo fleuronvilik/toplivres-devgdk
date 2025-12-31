@@ -11,7 +11,7 @@ export function bindAddBookForm(form, { afterCreate } = {}) {
     // const author = fd.get('author').trim();
     const unit_price = Number(fd.get('unit_price'));
 
-    if (!title) return notify('Title is required', 'error');
+    if (!title) return notify('Le titre est obligatoire', 'error');
     // validate price too
 
     const book = { title, unit_price };
@@ -24,7 +24,7 @@ export function bindAddBookForm(form, { afterCreate } = {}) {
         method: 'POST',
         body: JSON.stringify(book)
       });
-      notify(`Book "${res.title}" added`, 'success');
+      notify(`Livre "${res.title}" ajouté`, 'success');
       if (typeof afterCreate === 'function') await afterCreate();
       form.reset();
     } catch (err) {

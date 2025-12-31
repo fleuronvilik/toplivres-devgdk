@@ -1,5 +1,6 @@
 import { notify, showErrors } from "../core/notifications.js";
 import { setOrderBlockedState } from "../utils/api.js";
+import { fr } from "../i18n/fr.js";
 
 export function bindOrderForm(form, submitFn) {
   function countSelectedItems() {
@@ -14,7 +15,9 @@ export function bindOrderForm(form, submitFn) {
   function updateEmptyState() {
     const empty = form.querySelector("#books-empty-state");
     if (!empty) return;
-    empty.classList.toggle("hidden", countSelectedItems() > 0);
+    const hasSelection = countSelectedItems() > 0;
+    empty.classList.remove("hidden");
+    empty.textContent = hasSelection ? fr.form.helperSelected : fr.form.helperIdle;
   }
 
   async function onSubmit(e) {
@@ -25,7 +28,7 @@ export function bindOrderForm(form, submitFn) {
     const action = btn?.dataset?.action;
 
     if (action === "order" && form.dataset.orderBlocked === "true") {
-      setOrderBlockedState(true, "You already have a pending request.");
+      setOrderBlockedState(true, fr.form.states.cannotOrderPending);
       return;
     }
 
@@ -44,7 +47,7 @@ export function bindOrderForm(form, submitFn) {
             const stock = parseInt(input?.dataset?.stock || '0', 10);
             const errCell = form.querySelector(`#err-${bookId}`);
             if (qty > stock) {
-              if (errCell) errCell.textContent = 'Quantity exceeds your current stock';
+              if (errCell) errCell.textContent = fr.form.validation.exceedsCurrent;
               input?.setAttribute('aria-invalid', 'true');
               errors.push(bookId);
               continue; // skip pushing invalid item
@@ -79,9 +82,9 @@ export function bindOrderForm(form, submitFn) {
     form.querySelectorAll('button[type="submit"]').forEach(b => b.disabled = true);
     try {
       await submitFn({ action, items });
-      notify(`${action === 'order' ? 'Order' : 'Sale'} submitted`, 'success');
+      notify(action === 'order' ? fr.toast.orderSubmitted : fr.toast.saleRecorded, 'success');
       if (action === "order") {
-        setOrderBlockedState(true, "You already have a pending request.");
+        setOrderBlockedState(true, fr.form.states.cannotOrderPending);
       }
     } catch (err) {
       const orderErrors = err?.payload?.errors?.order;
@@ -94,7 +97,7 @@ export function bindOrderForm(form, submitFn) {
       form.querySelectorAll('button[type="submit"]').forEach(b => b.disabled = false);
       if (form.dataset.orderBlocked === "true") {
         const box = document.getElementById("order-blocked-box");
-        const message = box?.textContent || "You already have a pending request.";
+        const message = box?.textContent || fr.form.states.cannotOrderPending;
         setOrderBlockedState(true, message);
       }
     }

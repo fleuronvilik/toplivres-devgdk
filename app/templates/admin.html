@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Admin - Toplivres{% endblock %}
-{% block page_h1 %}Admin Dashboard{% endblock %}
+{% block page_h1 %}Tableau de bord admin{% endblock %}
 {% block content %}
 <!-- ADMIN DASHBOARD -->
 <div id="admin-dashboard" class="hidden">
@@ -12,24 +12,24 @@
     <!-- Add book form -->
     <div class="card">
         <form id="add-book-form" class="dashboard-form">
-        <h3>Add Book</h3>
-        <input type="text" name="title" placeholder="Title" required>
-        <input type="number" name="unit_price" placeholder="Price" step="0.01" required>
-        <button type="submit" class="btn btn-primary">Add Book</button>
+        <h3>Ajouter un livre</h3>
+        <input type="text" name="title" placeholder="Titre" required>
+        <input type="number" name="unit_price" placeholder="Prix" step="0.01" required>
+        <button type="submit" class="btn btn-primary">Ajouter le livre</button>
         </form>
     </div>
 
     <!-- Operations table -->
     <div class="card">
-        <h3>All Operations</h3>
+        <h3>Toutes les opérations</h3>
         <table id="admin-ops-table" class="table">
         <thead>
             <tr>
             <th>ID</th>
             <th>Date</th>
-            <th>Customer</th>
+            <th>Client</th>
             <th>Type</th>
-            <th>Status</th>
+            <th>Statut</th>
             <th>Actions</th>
             </tr>
         </thead>

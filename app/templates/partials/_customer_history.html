@@ -1,17 +1,18 @@
 <div id="history-tab" class="tab-pane card">
   <header class="flex filter-buttons">
-    <h3>History | Filter by type</h3>
-    <button class="filter-btn" data-filter="order">Orders</button>
-    <button class="filter-btn" data-filter="report">Reports</button>
-    <button class="filter-btn active" data-filter="">All</button>
+    <h3>Historique | Filtrer par type</h3>
+    <button class="filter-btn" data-filter="order">Commandes</button>
+    <button class="filter-btn" data-filter="report">Ventes</button>
+    <button class="filter-btn active" data-filter="">Toutes</button>
   </header>
+  <p id="history-empty-state" class="empty-state hidden">Aucune opération pour le moment.</p>
   <table id="orders-table" class="table">
     <thead>
       <tr>
         <th>ID</th>
         <th>Date</th>
         <th>Type</th>
-        <th>Status</th>
+        <th>Statut</th>
         <th>Actions</th>
       </tr>
     </thead>

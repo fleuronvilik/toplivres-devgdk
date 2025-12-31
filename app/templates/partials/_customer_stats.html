@@ -1,8 +1,43 @@
 <div id="stats-tab" class="tab-pane card">
-  <h2 class="text-xl font-semibold mb-4">Sales Stats</h2>
-  <canvas id="sales-chart"></canvas>
-  <ul id="sales-stats" class="list-disc list-inside text-gray-700">
-    <li>Total Sales: <span id="total-sales">0</span></li>
-    <li>Total Revenue: <span id="total-revenue">0</span></li>
-  </ul>
+  <div class="stats-header">
+    <h2 class="stats-title">Statistiques de vente</h2>
+    <small class="stats-target">Objectif : 30%</small>
+  </div>
+
+  <!-- KPI row -->
+  <div id="stats-grid" class="stats-grid" role="list">
+    <div class="stat" role="listitem">
+      <div class="stat-label">Total vendu</div>
+      <div class="stat-value"><span id="total-sales">0</span> <span class="stat-unit">unités</span></div>
+    </div>
+
+    <div class="stat" role="listitem">
+      <div class="stat-label">Total livré</div>
+      <div class="stat-value"><span id="total-delivered">0</span> <span class="stat-unit">unités</span></div>
+    </div>
+
+    <div class="stat" role="listitem">
+      <div class="stat-label">Chiffre d’affaires</div>
+      <div class="stat-value"><span id="total-revenue">0</span></div>
+    </div>
+
+    <div class="stat" role="listitem">
+      <div class="stat-label">Taux de vente</div>
+      <div class="stat-value"><span id="delivery-ratio">0%</span></div>
+    </div>
+  </div>
+
+  <!-- Helper line + progress -->
+  <p id="stats-empty-state" class="empty-state hidden">Pas assez de données pour afficher des stats.</p>
+  <div id="stats-footer" class="stats-footer">
+    <div id="stats-helper" class="stats-helper">0 vendus sur 0 livrés</div>
+
+    <div class="progress" aria-label="Progression des ventes">
+      <div id="stats-progress" class="progress-bar" style="width:0%"></div>
+    </div>
+
+    <div id="stats-status" class="status-pill">
+      — <!-- filled by JS -->
+    </div>
+  </div>
 </div>

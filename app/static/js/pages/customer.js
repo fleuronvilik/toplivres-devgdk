@@ -10,9 +10,8 @@ let unbindHistory = [], unbindNavigation, unbindOrderForm, unbindUserMenu;
 export async function mountCustomer(loaded) {
   show($('#customer-dashboard')); show($('#customer-navigation'));
   const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
-  const nameEl = $('#customer-name'); if (nameEl) nameEl.textContent = u.name || 'Customer';
+  const nameEl = $('#customer-name'); if (nameEl) nameEl.textContent = u.name || 'Client';
   const formElt = $('#operation-form');
-  let salesChart;
 
   if (!loaded.custBooks)  { await loadBooks();          loaded.custBooks  = true; }
   if (!loaded.custOrders) { await loadCustomerOrders(); loaded.custOrders = true; }
