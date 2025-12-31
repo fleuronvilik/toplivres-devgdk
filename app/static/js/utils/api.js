@@ -58,7 +58,7 @@ export async function loadAdminOperations() {
       <td>${formatStatus(op.status || '')}</td>
       <td>
         <button class="viewItemsBtn btn">Voir les articles</button>
-        <button data-action="delete" data-id="${op.id}" class="btn btn-danger">Supprimer</button>
+        ${op.status !== "cancelled" ? `<button data-action="delete" data-id="${op.id}" class="btn btn-danger">${fr.form.actions.cancel}</button>` : ""}
         ${op.type === "order" && op.status === "pending" ? `<button data-action=\"confirm\" data-id=\"${op.id}\" class=\"btn btn-accent\">Confirmer</button>` : ""}
       </td>
     `;
