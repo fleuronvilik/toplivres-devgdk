@@ -74,12 +74,91 @@ export async function loadAdminOperations() {
     }
 
     const tr = document.createElement("tr");
+    tr.dataset.client = (op.customer?.name || "").toLowerCase();
     tr.innerHTML = `
       <td>${op.id}</td>
       <td>${op.date}</td>
       <td><a href="/admin/users/${op.customer.id}">${op.customer.name || ""}</a></td>
       <td>${formatType(op.type || '')}</td>
       <td>${formatStatus(op.status || '')}</td>
+      <td>
+        <div class="table-actions">
+          <button class="viewItemsBtn btn">Voir les articles</button>
+          ${cancelMarkup}${actionMarkup}
+        </div>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+    tr.querySelector(".viewItemsBtn").addEventListener("click", () => openItemsSheet(op.items));
+  }
+}
+
+export async function loadAdminCustomerOperations(customerId) {
+  const res = await apiFetch("/api/admin/operations");
+  const actionableBody = document.getElementById("admin-customer-actionable-body");
+  const historyBody = document.getElementById("admin-customer-history-body");
+  const actionableTable = document.getElementById("admin-customer-actionable-table");
+  const historyTable = document.getElementById("admin-customer-history-table");
+  const actionableEmpty = document.getElementById("admin-customer-actionable-empty");
+  const historyEmpty = document.getElementById("admin-customer-history-empty");
+  const cancelLabel = fr.form.actions?.cancel || "Annuler";
+  const deleteLabel = fr.form.actions?.delete || "Supprimer";
+
+  if (!actionableBody || !historyBody) return;
+
+  const targetId = String(customerId || "");
+  const actionableOps = (res.actionable || []).filter(op => String(op.customer?.id || "") === targetId);
+  const allOps = [...(res.actionable || []), ...(res.history || [])].filter(
+    op => String(op.customer?.id || "") === targetId
+  );
+
+  allOps.sort((a, b) => {
+    const timeA = Date.parse(a.date || "");
+    const timeB = Date.parse(b.date || "");
+    if (!Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA !== timeB) {
+      return timeB - timeA;
+    }
+    return (b.id || 0) - (a.id || 0);
+  });
+
+  const recentOps = allOps.slice(0, 10);
+
+  actionableBody.innerHTML = "";
+  historyBody.innerHTML = "";
+
+  if (actionableEmpty) actionableEmpty.classList.toggle("hidden", actionableOps.length > 0);
+  if (actionableTable) actionableTable.classList.toggle("hidden", actionableOps.length === 0);
+  if (historyEmpty) historyEmpty.classList.toggle("hidden", recentOps.length > 0);
+  if (historyTable) historyTable.classList.toggle("hidden", recentOps.length === 0);
+
+  actionableOps.forEach(op => renderOperationRow(op, actionableBody, true));
+  recentOps.forEach(op => renderOperationRow(op, historyBody, false));
+
+  function renderOperationRow(op, tbody, isActionable) {
+    let actionMarkup = "";
+    let cancelMarkup = "";
+    const opId = op?.id ?? "—";
+
+    if (isActionable && op.type === "order") {
+      if (op.status === "pending") {
+        actionMarkup = `<button data-action="confirm" data-id="${opId}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-accent">${fr.form.actions.approve}</button>`;
+        cancelMarkup = `<button data-action="delete" data-id="${opId}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${fr.form.actions.reject}</button>`;
+      } else if (op.status === "approved") {
+        actionMarkup = `<button data-action="confirm" data-id="${opId}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-accent">${fr.form.actions.deliver}</button>`;
+        cancelMarkup = `<button data-action="delete" data-id="${opId}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${cancelLabel}</button>`;
+      }
+    } else if (isActionable && op.type === "report" && op.status !== "cancelled") {
+      actionMarkup = `<button data-action="delete" data-id="${opId}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${deleteLabel}</button>`;
+    }
+
+    const tr = document.createElement("tr");
+    tr.dataset.client = (op.customer?.name || "").toLowerCase();
+    tr.innerHTML = `
+      <td>${opId}</td>
+      <td>${op.date || "—"}</td>
+      <td>${formatType(op.type || '') || "—"}</td>
+      <td>${formatStatus(op.status || '') || "—"}</td>
       <td>
         <div class="table-actions">
           <button class="viewItemsBtn btn">Voir les articles</button>

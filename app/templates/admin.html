@@ -4,8 +4,7 @@
 {% block content %}
 <!-- ADMIN DASHBOARD -->
 <div id="admin-dashboard" class="hidden">
-    <header>
-        <h2>Admin</h2>
+    <header class="page-header">
         <div id="alerts"></div>
     </header>
 
@@ -23,7 +22,12 @@
     <div class="card">
         <div class="card-header">
             <h3>Toutes les opérations</h3>
-            <a class="btn btn-accent" href="/api/admin/export/csv" download>Télécharger le CSV</a>
+        </div>
+        <div class="card-toolbar">
+            <div class="table-search">
+                <input id="admin-ops-search" type="text" placeholder="Rechercher un client">
+            </div>
+            <a class="btn btn-primary" href="/api/admin/export/csv" download>Exporter CSV</a>
         </div>
         <table id="admin-ops-table" class="table">
             <thead>
