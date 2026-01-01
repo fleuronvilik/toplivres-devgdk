@@ -21,19 +21,31 @@
 
     <!-- Operations table -->
     <div class="card">
-        <h3>Toutes les opérations</h3>
+        <div class="card-header">
+            <h3>Toutes les opérations</h3>
+            <a class="btn btn-accent" href="/api/admin/export/csv" download>Télécharger le CSV</a>
+        </div>
         <table id="admin-ops-table" class="table">
-        <thead>
-            <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Client</th>
-            <th>Type</th>
-            <th>Statut</th>
-            <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
+            <thead>
+                <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Type</th>
+                <th>Statut</th>
+                <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="admin-ops-actionable"></tbody>
+
+            <!-- Intertitre dans la même table (optionnel mais très lisible) -->
+            <tbody>
+                <tr class="ops-separator">
+                <td colspan="6">Historique</td>
+                </tr>
+            </tbody>
+
+            <tbody id="admin-ops-history"></tbody>
         </table>
     </div>
 </div>

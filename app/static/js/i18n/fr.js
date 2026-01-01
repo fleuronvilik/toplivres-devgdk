@@ -50,6 +50,7 @@ export const fr = {
       submitSale: "Enregistrer la vente",
       cancelPending: "Annuler la demande en cours",
       cancel: "Annuler",
+      delete: "Supprimer",
       approve: "Approuver",
       deliver: "Marquer comme livrée",
       reject: "Rejeter",

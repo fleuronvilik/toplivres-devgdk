@@ -1,6 +1,9 @@
-from flask import Blueprint, request, jsonify
+import io
+import csv
+from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required 
-from app.models import Operation, db
+from sqlalchemy import case, desc, or_, and_
+from app.models import Operation, OperationItem, Book, User, db
 from app.schemas import BookSchema, OperationCancelSchema, OperationSchema
 from app.utils.decorators import role_required
 from app.utils.helpers import error_response
@@ -55,8 +58,35 @@ def delete_operation(operation_id):
 @jwt_required()
 @role_required("admin")
 def all_operations():
-    all_op = Operation.query.filter_by()
-    return OperationSchema(many=True).dump(all_op)
+    # 0 = orders, 1 = reports (donc reports après)
+    type_rank = case((Operation.type == "order", 0), else_=1)
+
+    base = Operation.query.order_by(type_rank, desc(Operation.date), desc(Operation.id))
+
+    actionable_q = or_(
+        and_(Operation.type == "order", Operation.status.in_(["pending", "approved"])),
+        # si tu veux garder une place pour reports "error" un jour :
+        # and_(Operation.type == "report", Operation.status == "error"),
+    )
+
+    actionable = (
+       base
+        .filter(actionable_q)
+        .order_by(Operation.date.desc())
+        .all()
+    )
+
+    history = (
+        base
+        .filter(~actionable_q)
+        .order_by(Operation.date.desc())
+        .limit(25)
+        .all()
+    )
+
+    schema = OperationSchema(many=True)
+    return {"actionable": schema.dump(actionable), "history": schema.dump(history)}, 200
+
 
 
 
@@ -75,3 +105,69 @@ def add_book():
     db.session.commit()
 
     return schema.dump(book), 201
+
+@admin_bp.route("/export/csv")
+@jwt_required()
+@role_required("admin")
+def export_operations_csv():
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # En-têtes
+    writer.writerow([
+        "ID opération",
+        "Date",
+        "Client",
+        "Livre",
+        "Quantité",
+        "Prix unitaire",
+        "Total",
+        "Type",
+        "Statut",
+        "Commentaire"
+    ])
+
+    # Requête : 1 ligne = 1 article
+    rows = (
+        db.session.query(
+            Operation.id,
+            Operation.date,
+            User.name,
+            Book.title,
+            OperationItem.quantity,
+            Book.unit_price,
+            Operation.type,
+            Operation.status,
+        )
+        .join(User, Operation.customer_id == User.id)
+        .join(OperationItem, OperationItem.operation_id == Operation.id)
+        .join(Book, OperationItem.book_id == Book.id)
+        .order_by(Operation.date.desc())
+        .limit(500)  # sécurité bêta
+        .all()
+    )
+
+    for r in rows:
+        total = r.quantity * r.unit_price
+        writer.writerow([
+            r.id,
+            r.date.strftime("%Y-%m-%d"),
+            r.name,
+            r.title,
+            r.quantity,
+            r.unit_price,
+            total,
+            "Commande" if r.type == "order" else "Rapport",
+            r.status or "—",
+            ""
+        ])
+
+    output.seek(0)
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={
+            "Content-Disposition": "attachment; filename=toplivres_operations.csv"
+        }
+    )

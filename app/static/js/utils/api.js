@@ -44,24 +44,35 @@ export async function apiFetch(path, options = {}) {
 }
 
 export async function loadAdminOperations() {
-  // loginForm.parentNode.classList.add("hidden");
-  const ops = await apiFetch("/api/admin/operations");
-  const tbody = document.getElementById("admin-ops-table").querySelector("tbody");
-  tbody.innerHTML = "";
-  ops.forEach(op => {
+  const res = await apiFetch("/api/admin/operations");
+
+  const actionableBody = document.getElementById("admin-ops-actionable");
+  const historyBody = document.getElementById("admin-ops-history");
+  const cancelLabel = fr.form.actions?.cancel || "Annuler";
+  const deleteLabel = fr.form.actions?.delete || "Supprimer";
+
+  actionableBody.innerHTML = "";
+  historyBody.innerHTML = "";
+
+  (res.actionable || []).forEach(op => renderOperationRow(op, actionableBody));
+  (res.history || []).forEach(op => renderOperationRow(op, historyBody));
+
+  function renderOperationRow(op, tbody) {
     let actionMarkup = "";
     let cancelMarkup = "";
+
     if (op.type === "order") {
       if (op.status === "pending") {
         actionMarkup = `<button data-action="confirm" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-accent">${fr.form.actions.approve}</button>`;
         cancelMarkup = `<button data-action="delete" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${fr.form.actions.reject}</button>`;
       } else if (op.status === "approved") {
         actionMarkup = `<button data-action="confirm" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-accent">${fr.form.actions.deliver}</button>`;
-        cancelMarkup = `<button data-action="delete" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${fr.form.actions.cancel}</button>`;
+        cancelMarkup = `<button data-action="delete" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${cancelLabel}</button>`;
       }
     } else if (op.type === "report" && op.status !== "cancelled") {
-      actionMarkup = `<button data-action="delete" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${fr.form.actions.cancel}</button>`;
+      actionMarkup = `<button data-action="delete" data-id="${op.id}" data-status="${op.status || ''}" data-type="${op.type || ''}" class="btn btn-danger">${deleteLabel}</button>`;
     }
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${op.id}</td>
@@ -76,9 +87,10 @@ export async function loadAdminOperations() {
         </div>
       </td>
     `;
+
     tbody.appendChild(tr);
-    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", () => openItemsSheet(op.items))
-  });
+    tr.querySelector(".viewItemsBtn").addEventListener("click", () => openItemsSheet(op.items));
+  }
 }
 
 export async function loadBooks() {

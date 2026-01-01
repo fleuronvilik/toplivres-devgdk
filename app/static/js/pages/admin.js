@@ -34,7 +34,7 @@ export async function mountAdmin(loaded) {
                         if (status === "delivered") {
                             message = "Annuler cette opération ?";
                         } else if (type === "report") {
-                            message = "Annuler ce rapport de vente ? Cela impactera le stock et les statistiques.";
+                            message = "Supprimer ce rapport de vente ? Cela impactera le stock et les statistiques.";
                         } else {
                             message = "Annuler cette opération ?";
                         }
