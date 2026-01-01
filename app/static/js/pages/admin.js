@@ -3,16 +3,29 @@ import { apiFetch, loadAdminOperations } from "../utils/api.js";
 import { delegate } from "../utils/events.js";
 import { bindAddBookForm } from "../features/addBookForm.js";
 
-let unbindAdmin, unbindAddBook;
+let unbindAdmin, unbindAddBook, unbindAdminSearch;
 
 export async function mountAdmin(loaded) {
     const root = $("#admin-dashboard");
     const adminOpsTable = $("#admin-ops-table");
     const addBookForm = $("#add-book-form");
+    const adminOpsSearch = $("#admin-ops-search");
     show(root);
+    const filterAdminOps = () => {
+        const query = adminOpsSearch?.value.trim().toLowerCase() || "";
+        const rows = adminOpsTable?.querySelectorAll("tbody tr") || [];
+        rows.forEach((row) => {
+            if (row.classList.contains("ops-separator")) return;
+            const clientName = row.dataset.client || "";
+            const matches = !query || clientName.includes(query);
+            row.classList.toggle("search-hidden", !matches);
+        });
+    };
+
     if (!loaded.adminOps) {
         await loadAdminOperations();
         loaded.adminOps = true;
+        if (adminOpsSearch?.value) filterAdminOps();
     }
 
     if (!unbindAdmin) {
@@ -46,8 +59,14 @@ export async function mountAdmin(loaded) {
                         await apiFetch(`/api/admin/operations/${id}`, { method: "DELETE" });
                     }
                     await loadAdminOperations();
+                    if (adminOpsSearch?.value) filterAdminOps();
             })
         )
+    }
+
+    if (!unbindAdminSearch && adminOpsSearch) {
+        adminOpsSearch.addEventListener("input", filterAdminOps);
+        unbindAdminSearch = () => adminOpsSearch.removeEventListener("input", filterAdminOps);
     }
 
     if (!unbindAddBook && addBookForm) unbindAddBook = bindAddBookForm(addBookForm);
@@ -56,6 +75,8 @@ export async function mountAdmin(loaded) {
 export function unmountAdmin() {
   unbindAdmin();
   unbindAdmin = null;
+  if (unbindAdminSearch) unbindAdminSearch();
+  unbindAdminSearch = null;
   unbindAddBook();
   unbindAddBook = null;
   $("#admin-dashboard").classList.add("hidden");

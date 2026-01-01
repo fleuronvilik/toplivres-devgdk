@@ -294,4 +294,4 @@ def admin_user_detail(id):
     if not user or user.role == "customer":
         return redirect(url_for("main.customer_self"))
     customer = User.query.get(id)
-    return render_template("customer_detail.html", role="admin", customer=customer)
+    return render_template("customer_detail.html", role="admin", customer=customer, hide_admin_nav=True)
