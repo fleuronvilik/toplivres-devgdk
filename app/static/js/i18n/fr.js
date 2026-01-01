@@ -19,10 +19,10 @@ export const fr = {
 
   form: {
     title: "Sélectionne des quantités",
-    helperIdle: "Saisis une quantité pour commencer.",
-    helperSelected: "Vérifie la sélection puis envoie.",
+    helperIdle: "Commence par saisir une quantité",
+    helperSelected: "Vérifie la sélection avant d’envoyer",
 
-    searchPlaceholder: "Rechercher un livre…",
+    searchPlaceholder: "Rechercher un livre",
 
     toggles: {
       showOnlySelected: "Afficher seulement la sélection",
@@ -53,20 +53,20 @@ export const fr = {
       delete: "Supprimer",
       approve: "Approuver",
       deliver: "Marquer comme livrée",
-      reject: "Rejeter",
+      reject: "Refuser",
     },
 
     validation: {
       nonNegative: "Doit être supérieur ou égal à 0",
-      positive: "Saisis une quantité positive",
+      positive: "Saisir une quantité positive",
       exceedsStock: (max) => `Dépasse le stock disponible (max ${max})`,
       exceedsCurrent: "La quantité dépasse ton stock actuel",
     },
 
     // Messages d’état (empty states / blocage)
     states: {
-      cannotOrderPending: "Tu as déjà une demande en cours. Attends la livraison ou annule-la.",
-      reportRequired: "Tu dois déclarer les ventes depuis la dernière livraison avant de recommander.",
+      cannotOrderPending: "Attends la livraison ou annule la dernière commande pour commander à nouveau.",
+      reportRequired: "Déclaration des ventes depuis la dernière livraison requise.",
       noItems: "Aucun article sélectionné.",
     },
   },
@@ -120,6 +120,12 @@ export const fr = {
     generic: "Une erreur est survenue.",
     unauthorized: "Accès non autorisé.",
     forbidden: "Action non autorisée.",
+
+    // Codes d'erreurs renvoyés par l'API
+    codes: {
+      order_wait_for_delivery: "Attends la livraison ou annule la demande en cours.",
+      order_report_required: "Déclaration des ventes depuis la dernière livraison requise.",
+    },
 
     // Catégories (si tu affiches un préfixe inline)
     categories: {

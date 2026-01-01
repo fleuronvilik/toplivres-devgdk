@@ -96,7 +96,9 @@ export function bindOrderForm(form, submitFn) {
     } catch (err) {
       const orderErrors = err?.payload?.errors?.order;
       if (orderErrors && orderErrors.length > 0) {
-        setOrderBlockedState(true, orderErrors[0]);
+        const raw = String(orderErrors[0] || "");
+        const mapped = fr.errors?.codes?.[raw] || raw;
+        setOrderBlockedState(true, mapped);
         return;
       }
       showErrors(err);

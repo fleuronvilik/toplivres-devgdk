@@ -1,5 +1,6 @@
 import { $, show } from "../utils/dom.js";
 import { apiFetch, loadAdminOperations } from "../utils/api.js";
+import { notify, showErrors } from "../core/notifications.js";
 import { delegate } from "../utils/events.js";
 import { bindAddBookForm } from "../features/addBookForm.js";
 
@@ -49,17 +50,25 @@ export async function mountAdmin(loaded) {
                         } else if (type === "report") {
                             message = "Supprimer ce rapport de vente ? Cela impactera le stock et les statistiques.";
                         } else {
-                            message = "Annuler cette opération ?";
+                            message = "Refuser cette commande ?";
                         }
                     }
                     if (message && !window.confirm(message)) return;
-                    if (action === "confirm") {
-                        await apiFetch(`/api/admin/orders/${id}/confirm`, { method: "PUT" });
-                    } else if (action === "delete") {
-                        await apiFetch(`/api/admin/operations/${id}`, { method: "DELETE" });
+                    try {
+                        let successMessage = "";
+                        if (action === "confirm") {
+                            await apiFetch(`/api/admin/orders/${id}/confirm`, { method: "PUT" });
+                            successMessage = status === "approved" ? "Commande livrée" : "Commande approuvée";
+                        } else if (action === "delete") {
+                            await apiFetch(`/api/admin/operations/${id}`, { method: "DELETE" });
+                            successMessage = type === "report" ? "Rapport de vente supprimé" : "Commande refusée";
+                        }
+                        await loadAdminOperations();
+                        if (adminOpsSearch?.value) filterAdminOps();
+                        if (successMessage) notify(successMessage, "success");
+                    } catch (err) {
+                        showErrors(err);
                     }
-                    await loadAdminOperations();
-                    if (adminOpsSearch?.value) filterAdminOps();
             })
         )
     }

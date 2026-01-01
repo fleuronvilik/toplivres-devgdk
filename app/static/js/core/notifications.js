@@ -106,7 +106,8 @@ export function normalizeErrors(payload) {
     for (const [field, messages] of Object.entries(payload.errors)) {
       const arr = Array.isArray(messages) ? messages : [messages];
       for (const m of arr) {
-        const msg = asMessageString(m);
+        const raw = asMessageString(m);
+        const msg = fr.errors.codes?.[raw] || raw;
         if (!msg) continue;
         out.push({ field, message: msg });
       }
@@ -115,7 +116,8 @@ export function normalizeErrors(payload) {
   }
 
   // fallback single message
-  const fallback = asMessageString(payload.msg || payload.message || payload.error);
+  const rawFallback = asMessageString(payload.msg || payload.message || payload.error);
+  const fallback = fr.errors.codes?.[rawFallback] || rawFallback;
   if (fallback) out.push({ field: "general", message: fallback });
 
   return out;
