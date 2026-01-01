@@ -522,29 +522,24 @@ export async function loadStats() {
   const elProgress = document.getElementById("stats-progress");
   if (elProgress) elProgress.style.width = `${clampedPct}%`;
 
-  // Status pill
-  const elStatus = document.getElementById("stats-status");
-  if (elStatus) {
-    // reset classes
-    elStatus.classList.remove("ok", "warn", "bad");
+  // Ratio KPI status
+  const ratioValue = document.getElementById("delivery-ratio");
+  const ratioKpi = ratioValue?.closest(".ratio-kpi");
+  if (ratioKpi) {
+    ratioKpi.classList.remove("ok", "warn", "bad");
 
-    // Avoid weird messaging when delivered is 0
     if (totalDelivered === 0) {
-      elStatus.classList.add("warn");
-      elStatus.textContent = "Aucune livraison enregistrée pour l’instant.";
+      ratioKpi.classList.add("warn");
       return;
     }
 
     const target = 0.30; // 30%
     if (ratio >= target) {
-      elStatus.classList.add("ok");
-      elStatus.textContent = `Bon rythme de vente ✅ (objectif ${Math.round(target * 100)}%)`;
+      ratioKpi.classList.add("ok");
     } else if (ratio >= 0.15) {
-      elStatus.classList.add("warn");
-      elStatus.textContent = `Rythme moyen ⚠️ (objectif ${Math.round(target * 100)}%)`;
+      ratioKpi.classList.add("warn");
     } else {
-      elStatus.classList.add("bad");
-      elStatus.textContent = `Rythme à améliorer ⛔ (objectif ${Math.round(target * 100)}%)`;
+      ratioKpi.classList.add("bad");
     }
   }
 }

@@ -24,7 +24,7 @@
     {% if not stats_compact %}
     <div class="stat" role="listitem">
       <div class="stat-label">Taux de vente</div>
-      <div class="stat-value"><span id="delivery-ratio">0%</span></div>
+      <div class="stat-value ratio-kpi"><span id="delivery-ratio">0%</span></div>
     </div>
     {% endif %}
   </div>
@@ -36,10 +36,6 @@
 
     <div class="progress" aria-label="Progression des ventes">
       <div id="stats-progress" class="progress-bar" style="width:0%"></div>
-    </div>
-
-    <div id="stats-status" class="status-pill">
-      — <!-- filled by JS -->
     </div>
   </div>
 </div>
