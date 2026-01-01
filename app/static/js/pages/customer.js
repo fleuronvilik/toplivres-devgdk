@@ -1,7 +1,7 @@
 import { $, show, hide } from '../utils/dom.js';
 import { bindTabs } from '../ui/tabs.js';
 import { bindUserMenu } from '../ui/userMenu.js';
-import { apiFetch, loadBooks, loadCustomerOrders, loadInventory, loadStats } from '../utils/api.js';
+import { apiFetch, loadBooks, loadCustomerOrders, loadInventory, loadStats, refreshOrderBlockedState } from '../utils/api.js';
 import { delegate } from '../utils/events.js';
 import { bindOrderForm } from '../features/orderForm.js';
 
@@ -47,6 +47,7 @@ export async function mountCustomer(loaded) {
           if (e.target.classList.contains('cancelBtn')) {
             await apiFetch(`/api/orders/${id}`, { method: 'DELETE' });
             await loadCustomerOrders();
+            await refreshOrderBlockedState();
             //await loadInventory();
           }
         }
