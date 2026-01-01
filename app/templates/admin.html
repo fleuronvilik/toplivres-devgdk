@@ -5,13 +5,17 @@
 <!-- ADMIN DASHBOARD -->
 <div id="admin-dashboard" class="hidden">
     <header class="page-header">
+        <h1 class="page-title">
+            Opérations
+            <a href="#" id="logoutLink" class="title-action">Se déconnecter</a>
+        </h1>
         <div id="alerts"></div>
     </header>
 
     <!-- Add book form -->
     <div class="card">
         <form id="add-book-form" class="dashboard-form">
-        <h3>Ajouter un livre</h3>
+        <h2>Ajouter un livre</h2>
         <input type="text" name="title" placeholder="Titre" required>
         <input type="number" name="unit_price" placeholder="Prix" step="0.01" required>
         <button type="submit" class="btn btn-primary">Ajouter le livre</button>
@@ -21,7 +25,7 @@
     <!-- Operations table -->
     <div class="card">
         <div class="card-header">
-            <h3>Toutes les opérations</h3>
+            <h2>Toutes les opérations</h2>
         </div>
         <div class="card-toolbar">
             <div class="table-search">
