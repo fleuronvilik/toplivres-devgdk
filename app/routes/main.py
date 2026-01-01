@@ -163,24 +163,11 @@ def get_user_stats(id):
 
     if claims["role"] == "customer" and id != user_id:
         return error_response("Unauthorized", 403, "reports")
-    query = (
-        db.session.query(
-            User.id,  # Selecting User ID
-            User.name,  # Selecting User Name
-            func.sum(-OperationItem.quantity * Book.unit_price).label('total_amount')  # Calculating the Sum and labeling
-        )
-        .join(Operation, Operation.customer_id == User.id)  # Joining User with Operation
-        .join(OperationItem, OperationItem.operation_id == Operation.id)  # Joining Operation with OperationItem
-        .join(Book, OperationItem.book_id == Book.id)  # Joining OperationItem with Book
-        .filter(OperationItem.quantity < 0)  # Filtering for quantity less than 0
-        .filter(User.id == id)
-        .group_by(User.id, User.name)  # Grouping by User ID and Name
-    )
 
-    row = query.first()
-    if not row:
-        return {"data": None}
-    
+    user = User.query.get(id)
+    if not user:
+        return error_response("User not found", 404, "user")
+
     total_sales = (
         db.session.query(func.sum(-OperationItem.quantity))
         .join(Operation, OperationItem.operation_id == Operation.id)
@@ -197,25 +184,29 @@ def get_user_stats(id):
         .scalar()
     )
 
-    if total_delivered is None:
-        delivery_ratio = 1
-        total_delivered = 0
-    elif total_sales is None:
-        delivery_ratio = 0
-        total_sales = 0
-    else:
-        delivery_ratio = (
-            round(total_sales / total_delivered, 2) if total_delivered > 0 else None
-        )
+    total_amount = (
+        db.session.query(func.sum(-OperationItem.quantity * Book.unit_price))
+        .select_from(OperationItem)
+        .join(Operation, OperationItem.operation_id == Operation.id)
+        .join(Book, OperationItem.book_id == Book.id)
+        .filter(Operation.customer_id == id)
+        .filter(OperationItem.quantity < 0)
+        .scalar()
+    )
+
+    total_sales = total_sales or 0
+    total_delivered = total_delivered or 0
+    delivery_ratio = round(total_sales / total_delivered, 2) if total_delivered > 0 else 0
     
     result = {
-        "id": row.id,
-        "name": row.name,
-        "total_amount": float(row.total_amount) if row.total_amount else 0.0,
+        "id": user.id,
+        "name": user.name,
+        "total_amount": float(total_amount) if total_amount else 0.0,
         "total_sales": total_sales,
         "total_delivered": total_delivered,
         "delivery_ratio": delivery_ratio
     }
+    print(result)
     return {"data": result}
 
 @main_bp.route("/api/operations")
@@ -227,7 +218,7 @@ def get_history():
         if (request.args):
             filter_type = request.args["type"]
             if filter_type == "order":
-                query = query.filter(and_(Operation.type == 'order', Operation.status.in_(["pending", "approved", "delivered"])))
+                query = query.filter(Operation.type == 'order')
             elif filter_type == "report":
                 query = query.filter(Operation.type == 'report')
             # else:
