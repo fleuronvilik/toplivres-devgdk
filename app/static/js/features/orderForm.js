@@ -86,6 +86,13 @@ export function bindOrderForm(form, submitFn) {
       if (action === "order") {
         setOrderBlockedState(true, fr.form.states.cannotOrderPending);
       }
+      form.querySelectorAll('input[name^="qty-"]').forEach((input) => {
+        input.dataset.resetting = "true";
+        input.value = "0";
+        input.dataset.touched = "false";
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        delete input.dataset.resetting;
+      });
     } catch (err) {
       const orderErrors = err?.payload?.errors?.order;
       if (orderErrors && orderErrors.length > 0) {

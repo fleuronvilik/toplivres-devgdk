@@ -277,7 +277,11 @@ export async function loadBooks() {
 
   tbody.addEventListener('input', (e) => {
     if (e.target && e.target.matches('input[type="number"]')) {
-      e.target.dataset.touched = 'true';
+      if (e.target.dataset.resetting === 'true') {
+        e.target.dataset.touched = 'false';
+      } else {
+        e.target.dataset.touched = 'true';
+      }
       recalc();
     }
   });
