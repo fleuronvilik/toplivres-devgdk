@@ -10,11 +10,9 @@
 
   <body>
     <a class="skip-link" href="#main">Aller au contenu principal</a>
-    {% if role == 'admin' %}
-    <nav id="admin-nav" class="nav">
+    {% if role == 'admin' and not hide_admin_nav %}
+    <nav id="admin-nav" class="admin-nav">
       <div class="container">
-        <a href="/admin" class="nav-link">Opérations</a>
-        <a href="/" class="nav-link">Livres</a>
         <a href="#" id="logoutLink" class="nav-link">Se déconnecter</a>
       </div>
     </nav>

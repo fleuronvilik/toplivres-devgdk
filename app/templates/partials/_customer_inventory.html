@@ -1,5 +1,11 @@
-<div id="inventory-tab" class="tab-pane card">
-  <h2>Ton stock</h2>
+<div id="inventory-tab" class="{{ inventory_class | default('tab-pane card') }}">
+  <h3 id="customer-inventory-title">{{ inventory_title | default('Ton stock') }}</h3>
+  {% if inventory_search %}
+  <div class="inventory-toolbar">
+    <label class="field-label" for="inventory-search">Rechercher un livre</label>
+    <input id="inventory-search" type="text" placeholder="Titre du livre">
+  </div>
+  {% endif %}
   <p id="inventory-empty-state" class="empty-state hidden">Ton stock est vide pour l’instant.</p>
   <table class="table" id="customer-inventory-table">
     <thead class="bg-gray-100">

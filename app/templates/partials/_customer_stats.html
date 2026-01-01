@@ -1,6 +1,6 @@
-<div id="stats-tab" class="tab-pane card">
+<div id="stats-tab" class="{{ stats_class | default('tab-pane card') }}">
   <div class="stats-header">
-    <h2 class="stats-title">Statistiques de vente</h2>
+    <h2 id="customer-stats-title" class="stats-title">Statistiques de vente</h2>
     <small class="stats-target">Objectif : 30%</small>
   </div>
 
@@ -21,10 +21,12 @@
       <div class="stat-value"><span id="total-revenue">0</span></div>
     </div>
 
+    {% if not stats_compact %}
     <div class="stat" role="listitem">
       <div class="stat-label">Taux de vente</div>
       <div class="stat-value"><span id="delivery-ratio">0%</span></div>
     </div>
+    {% endif %}
   </div>
 
   <!-- Helper line + progress -->

@@ -1,21 +1,19 @@
+{% set hide_admin_nav = true %}
 {% extends "base.html" %}
 {% block title %}Customer Detail{% endblock %}
 {% block content %}
-{% include "partials/_customer_nav_detail.html" %}
-<div id="customer-detail" class="tab-content hidden" data-customer-id="{{ customer.id }}">
-  <div id="customer-header">
-    <h2>Customer: <span id="customer-name">{{ customer.name }}</span></h2>
-  </div>
+<div id="customer-detail" data-customer-id="{{ customer.id }}">
+  <header id="customer-header">
+    <h2 id="customer-name">{{ customer.name }} — Stock & ventes</h2>
+    <a href="/admin">Retour aux opérations</a>
+  </header>
 
+  {% set inventory_title = "Stock client" %}
+  {% set inventory_class = "card" %}
   {% include "partials/_customer_inventory.html" %}
+
+  {% set stats_class = "card" %}
   {% include "partials/_customer_stats.html" %}
-  <!--
-  {% include "partials/_customer_history.html" %}
-  -->
 </div>
 
-{% include "partials/_settings_modal.html" %}
-{% include "partials/_items_sheet.html" %}
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}

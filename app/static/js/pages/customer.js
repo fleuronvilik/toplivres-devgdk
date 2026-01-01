@@ -88,15 +88,11 @@ export function unmountCustomer() {
 
 export async function mountCustomerDetailForAdmin(loaded) {
   const root = document.querySelector('#customer-detail');
-  const nav = document.querySelector('#customer-navigation');
-  if (nav) show(nav);
+  if (!root) {
+    console.warn('mountCustomerDetailForAdmin: #customer-detail introuvable');
+    return;
+  }
   show(root);
   if (!loaded.inventory) { await loadInventory(); loaded.inventory = true; }
   if (!loaded.stats) { await loadStats(); loaded.stats = true; }
-
-  // Bind tabs with default to inventory
-  const tabButtons = nav ? nav.querySelectorAll('.tab-link') : [];
-  const tabPanes = document.querySelectorAll('.tab-pane');
-  bindTabs(tabButtons, tabPanes, { defaultTab: 'inventory' });
-  bindUserMenu($('#customer-navigation'));
 }
