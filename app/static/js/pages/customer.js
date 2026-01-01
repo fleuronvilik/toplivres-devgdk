@@ -65,7 +65,7 @@ export async function mountCustomer(loaded) {
     const navElt = $('#customer-navigation');
     const tabButtons = navElt ? navElt.querySelectorAll('.tab-link') : [];
     const tabPanes = document.querySelectorAll('.tab-pane');
-    unbindNavigation = bindTabs(tabButtons, tabPanes, { defaultTab: 'orders' });
+    unbindNavigation = bindTabs(tabButtons, tabPanes, { defaultTab: 'ops' });
   }
 
   if (!unbindUserMenu) {

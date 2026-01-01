@@ -343,7 +343,13 @@ export async function loadBooks() {
   }
   const selectedToggle = document.getElementById('toggle-selected-only');
   if (selectedToggle) {
-    selectedToggle.addEventListener('change', () => recalc());
+    selectedToggle.addEventListener('change', () => {
+      if (searchInput) {
+        searchInput.value = '';
+        applySearchFilter();
+      }
+      recalc();
+    });
   }
 
   await refreshOrderBlockedState();
