@@ -17,6 +17,23 @@ export const fr = {
     logout: "Se déconnecter",
   },
 
+  settings: {
+    title: "Changer le mot de passe",
+    currentPasswordLabel: "Mot de passe actuel",
+    currentPasswordPlaceholder: "Mot de passe actuel",
+    newPasswordLabel: "Nouveau mot de passe",
+    newPasswordPlaceholder: "Nouveau mot de passe",
+    confirmPasswordLabel: "Confirmer le nouveau mot de passe",
+    confirmPasswordPlaceholder: "Confirme le nouveau mot de passe",
+    cancel: "Annuler",
+    save: "Enregistrer",
+    passwordMismatch: "Les mots de passe ne correspondent pas.",
+    passwordTooShort: "Le mot de passe doit contenir au moins 8 caractères.",
+    loadError: "Impossible d’ouvrir le changement de mot de passe.",
+    saveSuccess: "Mot de passe mis à jour.",
+    saveError: "Échec de la mise à jour du mot de passe.",
+  },
+
   form: {
     title: "Sélectionne des quantités",
     helperIdle: "Commence par saisir une quantité",

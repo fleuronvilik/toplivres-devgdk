@@ -2,28 +2,31 @@
   <div class="modal-backdrop" data-dismiss></div>
   <div class="modal-content">
     <header class="modal-header">
-      <h2 id="settings-title">Paramètres</h2>
+      <h2 id="settings-title">Changer le mot de passe</h2>
       <button class="close-btn" type="button" data-dismiss aria-label="Fermer">×</button>
     </header>
     <div class="modal-body">
       <form id="settings-form" class="grid-form" novalidate>
-        <label>
-          Nom
-          <input type="text" name="name" placeholder="Ton nom" minlength="1" maxlength="30" />
+        <label for="current-password">
+          <span>Mot de passe actuel</span>
+          <input id="current-password" type="password" name="current_password" placeholder="Mot de passe actuel" autocomplete="current-password" minlength="8" maxlength="128" required aria-describedby="current-password-error" />
+          <p class="field-error" id="current-password-error" aria-live="polite"></p>
         </label>
-        <label>
-          Email
-          <input type="email" name="email" placeholder="toi@example.com" maxlength="50" />
+        <label for="new-password">
+          <span>Nouveau mot de passe</span>
+          <input id="new-password" type="password" name="new_password" placeholder="Nouveau mot de passe" autocomplete="new-password" minlength="8" maxlength="128" required aria-describedby="new-password-error" />
+          <p class="field-error" id="new-password-error" aria-live="polite"></p>
         </label>
-        <label>
-          Téléphone (optionnel)
-          <input type="text" name="phone" placeholder="+33123456789" inputmode="tel" maxlength="20" pattern="^[0-9+(). \\-]*$" title="Chiffres et caractères + ( ) . - espaces uniquement" />
+        <label for="confirm-password">
+          <span>Confirmer le nouveau mot de passe</span>
+          <input id="confirm-password" type="password" name="confirm_password" placeholder="Confirme le nouveau mot de passe" autocomplete="new-password" minlength="8" maxlength="128" required aria-describedby="confirm-password-error" />
+          <p class="field-error" id="confirm-password-error" aria-live="polite"></p>
         </label>
       </form>
     </div>
     <footer class="modal-footer">
       <button class="btn" type="button" data-dismiss>Annuler</button>
-      <button class="btn btn-primary" type="button" id="settings-save" disabled>Enregistrer (placeholder)</button>
+      <button class="btn btn-primary" type="submit" id="settings-save" form="settings-form" disabled>Enregistrer</button>
     </footer>
   </div>
 </div>

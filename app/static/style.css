@@ -992,7 +992,8 @@ img {
 }
 
 #settings-modal input[type="text"],
-#settings-modal input[type="email"] {
+#settings-modal input[type="email"],
+#settings-modal input[type="password"] {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ccc;
