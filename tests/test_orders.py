@@ -115,7 +115,7 @@ def test_admin_only_can_confirm_order(client, auth_headers):
     res = client.put("/api/admin/orders/2/confirm", json=payload, headers=auth_headers["admin"])
     assert res.status_code == 200
     data = res.get_json()
-    assert "confirmed" in data["msg"]
+    assert "approved" in data["msg"]
 
 def test_customer_cannot_cancel_after_confirmation(client, auth_headers):
     payload = {

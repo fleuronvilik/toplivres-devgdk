@@ -27,7 +27,17 @@ def test_customer_order_and_admin_confirm_flow(client, auth_headers):
     assert res.get_json()["type"] == "order"
     assert res.get_json()["status"] == "pending"
 
-    # Admin confirms the order
+    # Admin approves the order
+    res = client.put(f"/api/admin/orders/{order_id}/confirm", headers=auth_headers["admin"])
+    assert res.status_code == 200
+
+    # Customer sees approved order in their list
+    res = client.get("/api/orders", headers=auth_headers["customer"])
+    assert res.status_code == 200
+    data = res.get_json()["data"]
+    assert any(op["id"] == order_id and op.get("type") == "order" and op.get("status") == "approved" for op in data)
+
+    # Admin delivers the order
     res = client.put(f"/api/admin/orders/{order_id}/confirm", headers=auth_headers["admin"])
     assert res.status_code == 200
 
@@ -39,10 +49,27 @@ def test_customer_order_and_admin_confirm_flow(client, auth_headers):
 
 
 def test_inventory_after_delivery(client, auth_headers):
-    # Place and confirm an order first
+    # Place and approve an order first
     order_payload = {"items": [{"book_id": 1, "quantity": 4}, {"book_id": 2, "quantity": 6}]}
     res = client.post("/api/orders", json=order_payload, headers=auth_headers["customer"])  # pending
     order_id = res.get_json()["id"]
+    client.put(f"/api/admin/orders/{order_id}/confirm", headers=auth_headers["admin"])  # approved
+
+    # Inventory should not change after approval
+    res = client.get("/api/users/inventory", headers=auth_headers["customer"])
+    assert res.status_code == 200
+    items = res.get_json()["data"]
+    assert items == []
+
+    # Stats should not change after approval
+    me = client.get("/api/users/me", headers=auth_headers["customer"]).get_json()
+    user_id = me["id"]
+    res = client.get(f"/api/users/{user_id}/stats", headers=auth_headers["customer"])
+    assert res.status_code == 200
+    stats = res.get_json()["data"]
+    assert stats["total_delivered"] == 0
+
+    # Deliver the order
     client.put(f"/api/admin/orders/{order_id}/confirm", headers=auth_headers["admin"])  # delivered
 
     # Inventory should reflect delivered quantities
@@ -55,10 +82,11 @@ def test_inventory_after_delivery(client, auth_headers):
 
 
 def test_customer_reports_sale_success_and_inventory_decreases(client, auth_headers):
-    # Prepare inventory: deliver books to the customer
+    # Prepare inventory: approve, then deliver books to the customer
     order_payload = {"items": [{"book_id": 1, "quantity": 5}, {"book_id": 2, "quantity": 7}]}
     res = client.post("/api/orders", json=order_payload, headers=auth_headers["customer"])  # pending
     order_id = res.get_json()["id"]
+    client.put(f"/api/admin/orders/{order_id}/confirm", headers=auth_headers["admin"])  # approved
     client.put(f"/api/admin/orders/{order_id}/confirm", headers=auth_headers["admin"])  # delivered
 
     # Report a valid sale (subset of inventory)
@@ -74,10 +102,11 @@ def test_customer_reports_sale_success_and_inventory_decreases(client, auth_head
 
 
 def test_sales_list_and_stats(client, auth_headers):
-    # Deliver then report a sale
+    # Approve, deliver then report a sale
     order_payload = {"items": [{"book_id": 1, "quantity": 10}, {"book_id": 2, "quantity": 10}]}
     res = client.post("/api/orders", json=order_payload, headers=auth_headers["customer"])  # pending
     order_id = res.get_json()["id"]
+    client.put(f"/api/admin/orders/{order_id}/confirm", headers=auth_headers["admin"])  # approved
     client.put(f"/api/admin/orders/{order_id}/confirm", headers=auth_headers["admin"])  # delivered
 
     sale_payload = {"items": [{"book_id": 1, "quantity": 2}, {"book_id": 2, "quantity": 3}]}
