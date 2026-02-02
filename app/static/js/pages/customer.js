@@ -1,11 +1,47 @@
 import { $, show, hide } from '../utils/dom.js';
 import { bindTabs } from '../ui/tabs.js';
 import { bindUserMenu } from '../ui/userMenu.js';
-import { apiFetch, loadBooks, loadCustomerOrders, loadInventory, loadStats, refreshOrderBlockedState } from '../utils/api.js';
+import { apiFetch, loadBooks, loadCustomerOrders, loadInventory, loadStats, refreshBooksStock, refreshOrderBlockedState } from '../utils/api.js';
 import { delegate } from '../utils/events.js';
 import { bindOrderForm } from '../features/orderForm.js';
 
-let unbindHistory = [], unbindNavigation, unbindOrderForm, unbindUserMenu;
+let unbindHistory = [], unbindNavigation, unbindOrderForm, unbindUserMenu, statsPoller, unbindStatsHash, unbindTabRefresh;
+let refreshActiveNow = null;
+
+function startStatsAutoRefresh() {
+  if (statsPoller) return;
+  const refreshIfActive = async () => {
+    if (document.hidden) return;
+    const statsPane = document.getElementById('stats-tab');
+    const historyPane = document.getElementById('history-tab');
+    const inventoryPane = document.getElementById('inventory-tab');
+    const opsPane = document.getElementById('ops-tab');
+    const tasks = [];
+    if (statsPane?.classList.contains('active')) tasks.push(loadStats({ silent: true }));
+    if (historyPane?.classList.contains('active')) tasks.push(loadCustomerOrders("", { silent: true }));
+    if (inventoryPane?.classList.contains('active')) tasks.push(loadInventory({ silent: true }));
+    if (opsPane?.classList.contains('active')) {
+      tasks.push(refreshBooksStock({ silent: true }));
+      tasks.push(refreshOrderBlockedState({ silent: true }));
+    }
+    if (tasks.length === 0) return;
+    try {
+      await Promise.all(tasks);
+    } catch (_) {
+      // Ignore transient errors; next poll will retry.
+    }
+  };
+  refreshActiveNow = refreshIfActive;
+  if (!unbindStatsHash) {
+    const onHashChange = () => refreshIfActive();
+    window.addEventListener('hashchange', onHashChange);
+    unbindStatsHash = () => window.removeEventListener('hashchange', onHashChange);
+  }
+  statsPoller = setInterval(async () => {
+    await refreshIfActive();
+  }, 10000);
+  refreshIfActive();
+}
 
 export async function mountCustomer(loaded) {
   show($('#customer-dashboard')); show($('#customer-navigation'));
@@ -17,6 +53,7 @@ export async function mountCustomer(loaded) {
   if (!loaded.custOrders) { await loadCustomerOrders(); loaded.custOrders = true; }
   if (!loaded.inventory)  { await loadInventory();      loaded.inventory  = true; }
   if (!loaded.stats)      { await loadStats();          loaded.stats      = true; }
+  startStatsAutoRefresh();
 
   if (!unbindOrderForm && formElt) {
     unbindOrderForm = bindOrderForm(formElt, async function ({action, items}) {
@@ -34,6 +71,8 @@ export async function mountCustomer(loaded) {
         });
         await loadCustomerOrders();
         await loadInventory();
+        await refreshBooksStock();
+        await loadStats();
       }
     })
   }
@@ -67,6 +106,14 @@ export async function mountCustomer(loaded) {
     const tabButtons = navElt ? navElt.querySelectorAll('.tab-link') : [];
     const tabPanes = document.querySelectorAll('.tab-pane');
     unbindNavigation = bindTabs(tabButtons, tabPanes, { defaultTab: 'ops' });
+    if (!unbindTabRefresh && navElt) {
+      const onTabClick = (e) => {
+        if (!e.target.closest('.tab-link')) return;
+        refreshActiveNow?.();
+      };
+      navElt.addEventListener('click', onTabClick);
+      unbindTabRefresh = () => navElt.removeEventListener('click', onTabClick);
+    }
   }
 
   if (!unbindUserMenu) {
@@ -83,6 +130,18 @@ export function unmountCustomer() {
   unbindOrderForm = null;
   unbindUserMenu?.();
   unbindUserMenu = null;
+  if (statsPoller) {
+    clearInterval(statsPoller);
+    statsPoller = null;
+  }
+  if (unbindStatsHash) {
+    unbindStatsHash();
+    unbindStatsHash = null;
+  }
+  if (unbindTabRefresh) {
+    unbindTabRefresh();
+    unbindTabRefresh = null;
+  }
   hide($('#customer-dashboard')); //).classList.add('hidden');
   hide($('#customer-navigation')); //.classList.add('hidden');
 }

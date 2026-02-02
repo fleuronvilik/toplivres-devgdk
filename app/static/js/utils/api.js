@@ -7,7 +7,9 @@ import { notify } from "../core/notifications.js";
 // Usage: await apiFetch("/api/some-endpoint", { method: "POST", body: JSON.stringify(data) });
 
 export async function apiFetch(path, options = {}) {
-  clearErrors();
+  if (options.clearErrors !== false && options.silent !== true) {
+    clearErrors();
+  }
 
   const method = (options.method || "GET").toUpperCase();
   const needsCSRF = ["POST","PUT","PATCH","DELETE"].includes(method);
@@ -359,6 +361,25 @@ export async function loadBooks() {
   await refreshOrderBlockedState();
 }
 
+export async function refreshBooksStock(options = {}) {
+  const customerId = resolveTargetCustomerId();
+  const res = await apiFetch(`/api/users/inventory?id=${customerId}`, options);
+  const stockByTitle = {};
+  (res.data || []).forEach(row => {
+    stockByTitle[row.title] = parseInt(row.stock || 0, 10);
+  });
+
+  document.querySelectorAll("#books-table tbody tr").forEach(tr => {
+    const title = tr.querySelector(".book-title")?.textContent?.trim();
+    if (!title) return;
+    const stock = stockByTitle[title] ?? 0;
+    const input = tr.querySelector('input[type="number"]');
+    if (input) input.dataset.stock = String(stock);
+    const tooltip = tr.querySelector('.stock-tooltip');
+    if (tooltip) tooltip.textContent = fr.form.hints.inStock(stock);
+  });
+}
+
 export function setOrderBlockedState(blocked, message = fr.form.states.cannotOrderPending) {
   const box = document.getElementById("order-blocked-box");
   const btnOrder = document.querySelector('#operation-form button[data-action="order"]');
@@ -389,11 +410,49 @@ export function setOrderBlockedState(blocked, message = fr.form.states.cannotOrd
   if (form) form.dataset.orderBlocked = "false";
 }
 
-export async function refreshOrderBlockedState() {
+export async function refreshOrderBlockedState(options = {}) {
   try {
-    const res = await apiFetch("/api/operations?type=order");
-    const hasPending = (res.data || []).some(op => op.status === "pending");
-    setOrderBlockedState(hasPending, hasPending ? fr.form.states.cannotOrderPending : "");
+    const res = await apiFetch("/api/operations", options);
+    const rows = res.data || [];
+    const orders = rows.filter(op => op.type === "order" && op.status !== "cancelled");
+    const reports = rows.filter(op => op.type === "report");
+    const hasPending = orders.some(op => op.status === "pending" || op.status === "approved");
+    let lastOrder = null;
+    orders.forEach(op => {
+      if (!lastOrder || (op.id || 0) > (lastOrder.id || 0)) lastOrder = op;
+    });
+
+    let reportRequired = false;
+    let hasDelivery = false;
+    if (lastOrder && lastOrder.status === "delivered") {
+      hasDelivery = true;
+      const reportAfter = reports.some(r => (r.id || 0) > (lastOrder.id || 0));
+      reportRequired = !reportAfter;
+    }
+
+    const blocked = hasPending || reportRequired;
+    const message = reportRequired ? fr.form.states.reportRequired : fr.form.states.cannotOrderPending;
+    setOrderBlockedState(blocked, message);
+
+    const form = document.getElementById("operation-form");
+    if (form) {
+      form.dataset.reportRequired = reportRequired ? "true" : "false";
+      form.dataset.hideEmpty = hasDelivery ? "true" : "false";
+      const empty = form.querySelector("#books-empty-state");
+      if (empty) {
+        const hasSelection = Array.from(form.querySelectorAll('input[name^="qty-"]'))
+          .some((input) => parseInt(input.value || "0", 10) > 0);
+        if (reportRequired) {
+          empty.classList.remove("hidden");
+          empty.textContent = fr.form.states.reportRequired;
+        } else if (hasDelivery && !hasSelection) {
+          empty.classList.add("hidden");
+        } else {
+          empty.classList.remove("hidden");
+          empty.textContent = hasSelection ? fr.form.helperSelected : fr.form.helperIdle;
+        }
+      }
+    }
   } catch (_) {
     // Ignore; don't block ordering on a transient fetch error.
   }
@@ -410,9 +469,9 @@ function resolveTargetCustomerId() {
   return current?.id;
 }
 
-export async function loadInventory() {
+export async function loadInventory(options = {}) {
   const customerId = resolveTargetCustomerId();
-  const res = await apiFetch(`/api/users/inventory?id=${customerId}`);
+  const res = await apiFetch(`/api/users/inventory?id=${customerId}`, options);
 
   const tbody = document.querySelector("#customer-inventory-table tbody");
   const table = document.getElementById("customer-inventory-table");
@@ -438,9 +497,9 @@ export async function loadInventory() {
   }
 }
 
-export async function loadCustomerOrders(typeFilter = "") {
+export async function loadCustomerOrders(typeFilter = "", options = {}) {
   // if (loginForm) loginForm.parentNode.classList.add("hidden");
-  const res = await apiFetch(`/api/operations?type=${typeFilter}`); // assumes Option A endpoints
+  const res = await apiFetch(`/api/operations?type=${typeFilter}`, options); // assumes Option A endpoints
   const table = document.getElementById("orders-table");
   const tbody = document.querySelector("#orders-table tbody");
   const empty = document.getElementById("history-empty-state");
@@ -474,9 +533,9 @@ export async function loadCustomerOrders(typeFilter = "") {
   });
 }
 
-export async function loadStats() {
+export async function loadStats(options = {}) {
   const customerId = resolveTargetCustomerId();
-  const res = await apiFetch(`/api/users/${customerId}/stats`);
+  const res = await apiFetch(`/api/users/${customerId}/stats`, options);
   const data = res.data || {};
 
   // Safe numbers

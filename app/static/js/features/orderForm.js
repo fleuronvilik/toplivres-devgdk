@@ -16,6 +16,17 @@ export function bindOrderForm(form, submitFn) {
     const empty = form.querySelector("#books-empty-state");
     if (!empty) return;
     const hasSelection = countSelectedItems() > 0;
+    const reportRequired = form.dataset.reportRequired === "true";
+    const hideEmpty = form.dataset.hideEmpty === "true";
+    if (reportRequired) {
+      empty.classList.remove("hidden");
+      empty.textContent = fr.form.states.reportRequired;
+      return;
+    }
+    if (hideEmpty && !hasSelection) {
+      empty.classList.add("hidden");
+      return;
+    }
     empty.classList.remove("hidden");
     empty.textContent = hasSelection ? fr.form.helperSelected : fr.form.helperIdle;
   }
