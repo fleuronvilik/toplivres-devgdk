@@ -273,7 +273,18 @@ export async function loadBooks() {
     if (totalEl) totalEl.textContent = formatCurrency(total);
     const empty = document.getElementById('books-empty-state');
     if (empty) {
-      empty.textContent = selected > 0 ? fr.form.helperSelected : fr.form.helperIdle;
+      const form = document.getElementById("operation-form");
+      const reportRequired = form?.dataset.reportRequired === "true";
+      const hideEmpty = form?.dataset.hideEmpty === "true";
+      if (reportRequired) {
+        empty.classList.remove("hidden");
+        empty.textContent = fr.form.states.reportRequired;
+      } else if (hideEmpty && selected === 0) {
+        empty.classList.add("hidden");
+      } else {
+        empty.classList.remove("hidden");
+        empty.textContent = selected > 0 ? fr.form.helperSelected : fr.form.helperIdle;
+      }
     }
   }
 
