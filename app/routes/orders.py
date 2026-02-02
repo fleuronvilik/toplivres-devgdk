@@ -21,7 +21,7 @@ def create_order():
 
     report, prev = can_request_delivery(user_id)
     if prev and prev.status == "pending":
-        return error_response("order_wait_for_delivery", 403, "order")
+        return error_response("Wait for delivery or cancel existing request first", 403, "order")
     if prev and not report:
         return error_response(
             "order_report_required",

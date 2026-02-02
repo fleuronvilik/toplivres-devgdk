@@ -156,6 +156,41 @@ def update_current_user():
     return UserSchema().dump(user), 200
 
 
+@main_bp.route('/api/users/password', methods=['PUT'])
+@jwt_required()
+def update_current_user_password():
+    """Update the authenticated user's password."""
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return error_response("User not found", 404)
+
+    payload = request.get_json(silent=True) or {}
+    current_password = (payload.get("current_password") or "").strip()
+    new_password = (payload.get("new_password") or "").strip()
+
+    if not current_password or not new_password:
+        return error_response("Current and new password are required", 400, "password")
+
+    if not user.check_password(current_password):
+        return error_response("Current password is incorrect", 400, "current_password")
+
+    if current_password == new_password:
+        return error_response("New password must be different", 400, "new_password")
+
+    if len(new_password) < 8 or len(new_password) > 128:
+        return error_response("Password must be 8-128 characters", 400, "new_password")
+
+    user.set_password(new_password)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return error_response("Unable to update password", 400)
+
+    return jsonify({"status": "ok"}), 200
+
+
 @main_bp.route('/api/users/<int:id>/stats')
 @jwt_required()
 def get_user_stats(id):

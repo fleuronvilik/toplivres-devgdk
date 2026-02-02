@@ -22,18 +22,17 @@ def confirm_order(order_id: int):
     if not order or order.type != 'order' or order.status not in ('pending', 'approved'):
         return error_response("Order not found or not pending/approved", 404, "order")
 
-    next_status = "approved" if order.status == "pending" else "delivered"
-    order.status = next_status
+    order.status = "delivered"
     order.type = 'order'
     db.session.commit()
     log_event(
-        f"order {next_status}",
+        "order delivered",
         order_id=order.id,
         customer_id=order.customer.id,
         customer=order.customer.email,
         books_count=sum(item.quantity for item in order.items)
     )
-    return jsonify({"msg": f"Order {next_status}"}), 200
+    return jsonify({"msg": "Order confirmed"}), 200
 
 
 @admin_bp.route("/operations/<int:operation_id>", methods=["DELETE"])
