@@ -7,6 +7,12 @@ import { bindOrderForm } from '../features/orderForm.js';
 
 let unbindHistory = [], unbindNavigation, unbindOrderForm, unbindUserMenu, statsPoller, unbindStatsHash, unbindTabRefresh;
 let refreshActiveNow = null;
+let historyFilter = "";
+
+function getActiveHistoryFilter() {
+  const active = document.querySelector('#history-tab .filter-btn.active');
+  return active?.dataset?.filter || historyFilter || "";
+}
 
 function startStatsAutoRefresh() {
   if (statsPoller) return;
@@ -18,7 +24,9 @@ function startStatsAutoRefresh() {
     const opsPane = document.getElementById('ops-tab');
     const tasks = [];
     if (statsPane?.classList.contains('active')) tasks.push(loadStats({ silent: true }));
-    if (historyPane?.classList.contains('active')) tasks.push(loadCustomerOrders("", { silent: true }));
+    if (historyPane?.classList.contains('active')) {
+      tasks.push(loadCustomerOrders(getActiveHistoryFilter(), { silent: true }));
+    }
     if (inventoryPane?.classList.contains('active')) tasks.push(loadInventory({ silent: true }));
     if (opsPane?.classList.contains('active')) {
       tasks.push(refreshBooksStock({ silent: true }));
@@ -85,7 +93,7 @@ export async function mountCustomer(loaded) {
           const id = e.target.dataset.id;
           if (e.target.classList.contains('cancelBtn')) {
             await apiFetch(`/api/orders/${id}`, { method: 'DELETE' });
-            await loadCustomerOrders();
+            await loadCustomerOrders(getActiveHistoryFilter());
             await refreshOrderBlockedState();
             //await loadInventory();
           }
@@ -93,8 +101,9 @@ export async function mountCustomer(loaded) {
       ),
       delegate(
         customerHistory, 'click', 'button.filter-btn', async (e) => {
-          await loadCustomerOrders(e.target.dataset.filter || '');
-          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          historyFilter = e.target.dataset.filter || '';
+          await loadCustomerOrders(historyFilter);
+          document.querySelectorAll('#history-tab .filter-btn').forEach(b => b.classList.remove('active'));
           e.target.classList.add('active');
         }
       )
