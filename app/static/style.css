@@ -440,6 +440,13 @@ img {
   transition: opacity 0.15s ease;
 }
 
+.note-hint {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  margin-top: 0;
+}
+
 .stock-hint-btn {
   width: 18px;
   height: 18px;

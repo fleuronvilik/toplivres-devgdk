@@ -55,7 +55,11 @@ def delete_operation(operation_id):
     if not op:
         return error_response("Order or Report not found", 404, "operation")    
     if (op.type == 'order' and op.status != 'cancelled'):
+        payload = request.get_json(silent=True) or {}
+        note = (payload.get("notes") or "").strip()
         op.status = "cancelled"
+        if note:
+            op.notes = note
         db.session.commit()
         return OperationSchema().dump(op), 200
     
@@ -135,7 +139,7 @@ def export_operations_csv():
         "Total",
         "Type",
         "Statut",
-        "Commentaire"
+        "Notes"
     ])
 
     # Requête : 1 ligne = 1 article
@@ -149,6 +153,7 @@ def export_operations_csv():
             Book.unit_price,
             Operation.type,
             Operation.status,
+            Operation.notes,
         )
         .join(User, Operation.customer_id == User.id)
         .join(OperationItem, OperationItem.operation_id == Operation.id)
@@ -170,7 +175,7 @@ def export_operations_csv():
             total,
             "Commande" if r.type == "order" else "Rapport",
             r.status or "—",
-            ""
+            r.notes or ""
         ])
 
     output.seek(0)

@@ -108,6 +108,7 @@ class Operation(db.Model):
     type = db.Column(db.String(10), nullable=False, default="order")  # 'order' | 'report'
     status = db.Column(db.String(12), nullable=True, default="pending")  # orders: pending|approved|delivered|cancelled; reports: recorded
     date = db.Column(db.Date, nullable=False, default=date.today)
+    notes = db.Column(db.Text, nullable=True)
 
     # relationships
     # customer = db.relationship("User", backref="operations")

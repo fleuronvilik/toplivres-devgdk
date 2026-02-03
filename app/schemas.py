@@ -97,6 +97,7 @@ class OperationSchema(SQLAlchemyAutoSchema):
     # )
     items = ma.fields.Nested(ItemSchema, many=True)
     customer = ma.fields.Nested(UserSchema, only=("id", "name")) #customer_id = auto_field(dump_only=True)
+    notes = auto_field()
 
 
 class BaseOperationSchema(OperationSchema):

@@ -56,11 +56,19 @@ export async function mountAdmin(loaded) {
                     if (message && !window.confirm(message)) return;
                     try {
                         let successMessage = "";
+                        let notes = "";
                         if (action === "confirm") {
                             await apiFetch(`/api/admin/orders/${id}/confirm`, { method: "PUT" });
                             successMessage = status === "approved" ? "Commande livrée" : "Commande approuvée";
                         } else if (action === "delete") {
-                            await apiFetch(`/api/admin/operations/${id}`, { method: "DELETE" });
+                            if (type === "order") {
+                                notes = window.prompt("Motif (obligatoire) :") || "";
+                                if (!notes.trim()) return;
+                            }
+                            await apiFetch(`/api/admin/operations/${id}`, {
+                                method: "DELETE",
+                                body: notes ? JSON.stringify({ notes }) : null
+                            });
                             successMessage = type === "report" ? "Rapport de vente supprimé" : "Commande refusée";
                         }
                         await loadAdminOperations();

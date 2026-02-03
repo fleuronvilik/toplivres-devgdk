@@ -56,10 +56,12 @@ export const fr = {
       unitPrice: "Prix unitaire",
       quantity: "Quantité",
       stock: "Stock dispo",
+      note: "Note",
     },
 
     tooltips: {
       stock: "Stock disponible d’après tes livraisons et tes ventes déclarées.",
+      note: "Voir la note",
     },
 
     actions: {

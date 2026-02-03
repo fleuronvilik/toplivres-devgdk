@@ -45,8 +45,36 @@ export async function apiFetch(path, options = {}) {
   return data;
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderNotesCell(op, { label = fr.form.tooltips?.note || "Voir la note" } = {}) {
+  const note = (op?.notes || "").trim();
+  if (!note) return "";
+  return `
+    <div class="stock-hint note-hint">
+      <button type="button" class="stock-hint-btn" aria-label="${escapeHtml(label)}" aria-describedby="note-${op.id}" aria-expanded="false">i</button>
+      <span class="stock-tooltip" id="note-${op.id}" role="tooltip">${escapeHtml(note)}</span>
+    </div>
+  `;
+}
+
+function applyNoteHeadersLabel() {
+  const label = fr.form.columns?.note || "Note";
+  document.querySelectorAll("th[data-col='note']").forEach((th) => {
+    if (th.textContent !== label) th.textContent = label;
+  });
+}
+
 export async function loadAdminOperations() {
   const res = await apiFetch("/api/admin/operations");
+  applyNoteHeadersLabel();
 
   const actionableBody = document.getElementById("admin-ops-actionable");
   const historyBody = document.getElementById("admin-ops-history");
@@ -89,6 +117,7 @@ export async function loadAdminOperations() {
           ${cancelMarkup}${actionMarkup}
         </div>
       </td>
+      <td>${op.type === "order" && op.status === "cancelled" ? renderNotesCell(op) : ""}</td>
     `;
 
     tbody.appendChild(tr);
@@ -98,6 +127,7 @@ export async function loadAdminOperations() {
 
 export async function loadAdminCustomerOperations(customerId) {
   const res = await apiFetch("/api/admin/operations");
+  applyNoteHeadersLabel();
   const actionableBody = document.getElementById("admin-customer-actionable-body");
   const historyBody = document.getElementById("admin-customer-history-body");
   const actionableTable = document.getElementById("admin-customer-actionable-table");
@@ -167,6 +197,7 @@ export async function loadAdminCustomerOperations(customerId) {
           ${cancelMarkup}${actionMarkup}
         </div>
       </td>
+      <td>${op.type === "order" && op.status === "cancelled" ? renderNotesCell(op) : ""}</td>
     `;
 
     tbody.appendChild(tr);
@@ -511,6 +542,7 @@ export async function loadInventory(options = {}) {
 export async function loadCustomerOrders(typeFilter = "", options = {}) {
   // if (loginForm) loginForm.parentNode.classList.add("hidden");
   const res = await apiFetch(`/api/operations?type=${typeFilter}`, options); // assumes Option A endpoints
+  applyNoteHeadersLabel();
   const table = document.getElementById("orders-table");
   const tbody = document.querySelector("#orders-table tbody");
   const empty = document.getElementById("history-empty-state");
@@ -538,9 +570,13 @@ export async function loadCustomerOrders(typeFilter = "", options = {}) {
         ? `<button data-id="${op.id}" class="cancelBtn btn btn-danger">Annuler</button>`
         : ""}
       </td>
+      <td>${op.type === "order" && op.status === "cancelled" ? renderNotesCell(op) : ""}</td>
     `;
     tbody.appendChild(tr);
-    tr.lastElementChild.querySelector(".viewItemsBtn").addEventListener("click", () => openItemsSheet(op.items))
+    const viewBtn = tr.querySelector(".viewItemsBtn");
+    if (viewBtn) {
+      viewBtn.addEventListener("click", () => openItemsSheet(op.items));
+    }
   });
 }
 
