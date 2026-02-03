@@ -80,6 +80,7 @@ export async function mountCustomer(loaded) {
         await loadCustomerOrders();
         await loadInventory();
         await refreshBooksStock();
+        await refreshOrderBlockedState();
         await loadStats();
       }
     })

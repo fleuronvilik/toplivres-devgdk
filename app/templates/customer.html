@@ -6,7 +6,26 @@
 <div id="customer-dashboard" class="tab-content hidden">
   <div id="customer-header">
     <h1>Bienvenue, <span id="customer-name">{{ customer_name }}</span> 👋</h1>
-    <p>Passe une commande, déclare tes ventes et suis leur évolution ici.</p>
+    <details open>
+      <summary>Passe une commande, déclare tes ventes et suis leur évolution ici. Commence par saisir une quantité.</summary>
+      <ul>
+        <li>
+          <strong>Recherche</strong> : filtre les titres pour aller plus vite.
+        </li>
+        <li>
+          <strong>Erreurs en rouge</strong> : elles t’indiquent un problème de stock. Tu peux les ignorer lors d'une commande.
+        </li>
+        <li>
+          <strong>Filtres (cases à cocher)</strong> : afficher/masquer les erreurs, afficher seulement les titres modifiés ou tout afficher.
+        </li>
+        <li>
+          <strong>Stock</strong> : clique sur l’icône info qui apparaît au survol d'une ligne pour voir le stock disponible.
+        </li>
+        <li>
+          <strong>Suivi</strong> : consulte Historique, Ton stock et Stats pour suivre l’évolution.
+        </li>
+      </ul>
+    </details>
   </div>
 
   {# Swap in a table-based selector for better scalability #}

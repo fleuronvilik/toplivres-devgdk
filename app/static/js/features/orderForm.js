@@ -12,25 +12,6 @@ export function bindOrderForm(form, submitFn) {
     return count;
   }
 
-  function updateEmptyState() {
-    const empty = form.querySelector("#books-empty-state");
-    if (!empty) return;
-    const hasSelection = countSelectedItems() > 0;
-    const reportRequired = form.dataset.reportRequired === "true";
-    const hideEmpty = form.dataset.hideEmpty === "true";
-    if (reportRequired) {
-      empty.classList.remove("hidden");
-      empty.textContent = fr.form.states.reportRequired;
-      return;
-    }
-    if (hideEmpty && !hasSelection) {
-      empty.classList.add("hidden");
-      return;
-    }
-    empty.classList.remove("hidden");
-    empty.textContent = hasSelection ? fr.form.helperSelected : fr.form.helperIdle;
-  }
-
   async function onSubmit(e) {
     e.preventDefault();
     const fd = new FormData(form);
@@ -71,7 +52,6 @@ export function bindOrderForm(form, submitFn) {
         }
       }
     }
-    updateEmptyState();
     if (items.length === 0) {
       // Inline empty-state message is already present under the table
       // Focus the first qty input to guide the user
@@ -122,16 +102,8 @@ export function bindOrderForm(form, submitFn) {
       }
     }
   }
-  const onInput = (e) => {
-    if (e.target && e.target.matches('input[name^="qty-"]')) {
-      updateEmptyState();
-    }
-  };
   form.addEventListener('submit', onSubmit);
-  form.addEventListener('input', onInput);
-  updateEmptyState();
   return () => {
     form.removeEventListener('submit', onSubmit);
-    form.removeEventListener('input', onInput);
   };
 }

@@ -302,21 +302,7 @@ export async function loadBooks() {
     }
     const totalEl = document.getElementById('books-total-amount');
     if (totalEl) totalEl.textContent = formatCurrency(total);
-    const empty = document.getElementById('books-empty-state');
-    if (empty) {
-      const form = document.getElementById("operation-form");
-      const reportRequired = form?.dataset.reportRequired === "true";
-      const hideEmpty = form?.dataset.hideEmpty === "true";
-      if (reportRequired) {
-        empty.classList.remove("hidden");
-        empty.textContent = fr.form.states.reportRequired;
-      } else if (hideEmpty && selected === 0) {
-        empty.classList.add("hidden");
-      } else {
-        empty.classList.remove("hidden");
-        empty.textContent = selected > 0 ? fr.form.helperSelected : fr.form.helperIdle;
-      }
-    }
+    // Empty-state guidance removed; keep feedback in the blocked box only.
   }
 
   tbody.addEventListener('input', (e) => {
@@ -480,20 +466,6 @@ export async function refreshOrderBlockedState(options = {}) {
     if (form) {
       form.dataset.reportRequired = reportRequired ? "true" : "false";
       form.dataset.hideEmpty = hasDelivery ? "true" : "false";
-      const empty = form.querySelector("#books-empty-state");
-      if (empty) {
-        const hasSelection = Array.from(form.querySelectorAll('input[name^="qty-"]'))
-          .some((input) => parseInt(input.value || "0", 10) > 0);
-        if (reportRequired) {
-          empty.classList.remove("hidden");
-          empty.textContent = fr.form.states.reportRequired;
-        } else if (hasDelivery && !hasSelection) {
-          empty.classList.add("hidden");
-        } else {
-          empty.classList.remove("hidden");
-          empty.textContent = hasSelection ? fr.form.helperSelected : fr.form.helperIdle;
-        }
-      }
     }
   } catch (_) {
     // Ignore; don't block ordering on a transient fetch error.
