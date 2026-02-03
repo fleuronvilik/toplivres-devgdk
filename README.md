@@ -1,105 +1,73 @@
-<!--
-Now flask_jwt_extend setup is ready from installation to testing meaning phase 2 step 1 is completed. Phase is such a recurring word with all the breakdown. In the build order, people can sign up and login(1), but the auth routes are POST /auth/signup and POST /auth/login. As of step 2, protected book catalog, I've decided to let the catalogue publicly accessible, no JWT requirements to GET /books and GET /books/<id>. Instead the requirement is added for POST /books which return {error: "admin only"} 403 forbidden for customers trying to add books, but let admin do their thing.
+# 📚 Toplivres — Book Depot Tracker
 
-To achieve this goals, I had to agree with your take. For this MVP learning mode, no extra complexityy needed. Option 1, single table inheritance was the choice instead with its pro and cons. The alternative was separated tables and share authentication logic.
+Toplivres is a backend system that replaces a shared Google Sheets workflow used to manage
+**book dépôt-vente (consignment sales)** between an administrator and multiple partner organizations.
 
-Based on this review, I want you to start an outline of a README explaining architecture, tools and decisions made so far, how I've use AI to power my learning. And remember, we are reframing an excel tracker as a backend system.
-
--->
-
-# 📚 Book Depot Tracker  
-_A backend system reframing an Excel-based book dépôt-vente tracker into a fully functional web API._
-
-## 1️⃣ Overview  
-This project transforms an **Excel tracker** used for managing book dépôt-vente sales into a **backend application** powered by Flask, SQLAlchemy, and JWT-based authentication.  
-
-The goal is **not only to build an MVP** but to use it as a **learning vehicle** for backend architecture, database design, and secure API development — guided and accelerated with AI assistance.  
+It provides a structured alternative to spreadsheets for handling **delivery requests, sales reporting,
+inventory tracking, and revenue sharing**, with clear separation between customer and admin responsibilities.
 
 ---
 
-## 2️⃣ Architecture  
-### Core Stack  
-- **Flask** — minimal Python web framework for routing and request handling.  
-- **Flask-SQLAlchemy** — ORM for database modeling and queries.  
-- **Flask-Migrate (Alembic)** — database migrations.  
-- **Marshmallow + marshmallow-sqlalchemy** — schema-based serialization and validation.  
-- **Flask-JWT-Extended** — JSON Web Token authentication and authorization.  
+## What problem it solves
 
-### Layered Design  
-- **Models** (`models.py`) — ORM classes defining tables, relationships, and constraints.  
-- **Schemas** (`schemas.py`) — Data serialization (Python → JSON) and deserialization (JSON → Python) with validation rules.  
-- **Routes / Blueprints** (`routes.py`, `auth.py`) — HTTP endpoints organized by functionality.  
-- **Seed Data** (`seed.py`) — Script to populate dev environment with sample data.  
-- **Migrations** (`migrations/`) — Version-controlled DB schema evolution.
+Without Toplivres, managing dépôt-vente requires:
+- shared spreadsheets per partner
+- manual tracking of deliveries and sales
+- error-prone reporting
+- implicit trust with little enforcement
+
+Toplivres centralizes this workflow into a single system that:
+- enforces business rules automatically
+- prevents invalid states (duplicate orders, missing reports)
+- gives each user a clear, isolated view of their data
 
 ---
 
-## 3️⃣ Tools & Environment  
-- **Python 3.10+**  
-- **pipenv / venv** for virtual environments.  
-- **SQLite** for local development (switchable to Postgres in prod).  
-- **Flask CLI** (`flask db migrate`, `flask db upgrade`) for DB changes.  
-- **Postman / curl** for API testing.  
+## Core workflow
+
+Toplivres models a **closed operational loop**:
+
+1. A customer submits a **delivery request** (order)
+2. An admin **approves or rejects** the request
+3. Approved requests are marked as **delivered**
+4. The customer submits a **sales report**
+5. Only then can a new delivery request be made
+
+This sequencing is enforced by the system.
 
 ---
 
-## 4️⃣ Key Design Decisions  
-1. **From Excel to Backend** — Treat every sheet and column as entities and relationships in a relational database.  
-2. **Single Table Inheritance for Users** — One `User` table with a `role` field (`admin`, `customer`) instead of separate `Admin` and `Customer` tables. Keeps MVP simple while enabling role-based permissions.  
-3. **Public Catalog, Protected Mutations** —  
-   - `GET /books` and `GET /books/<id>` → public  
-   - `POST /books` → admin-only (JWT + role check)  
-4. **Data Validation** — Marshmallow ensures required fields and type safety (e.g., `Email()` for user email).  
-5. **Seed-first Dev Flow** — Always start from an empty DB and populate via migration + seed scripts.  
+## Roles and permissions
+
+- **Customers**
+  - request book deliveries
+  - submit sales reports
+  - view their inventory, history, and statistics
+  - cannot bypass workflow rules
+
+- **Admins**
+  - manage the book catalog
+  - approve, reject, cancel, and deliver orders
+  - correct errors by deleting reports when necessary
+  - have global visibility over operations
+
+Roles are strictly separated (RBAC).
 
 ---
 
-## 5️⃣ Authentication Flow  
-- **Signup** (`POST /auth/signup`) — validates input, hashes password, stores new user.  
-- **Login** (`POST /auth/login`) — verifies credentials, issues JWT with `id` and `role`.  
-- **Protected Routes** — Require valid JWT in `Authorization: Bearer <token>` header, with role checks for admin-only actions.  
+## Design principles
+
+- Business rules are enforced at the backend level
+- Only one active order is allowed per customer
+- A delivery must be followed by a sales report
+- The system favors consistency over convenience
+- Simplicity and clarity over architectural purity
 
 ---
 
-## 6️⃣ How AI Powered My Learning  
-Instead of following a static tutorial, AI guided decisions and explained concepts step-by-step:  
-- Broke down the **MVP into phases** (auth → catalog → orders → reporting).  
-- Clarified **trade-offs** (single table vs multi-table inheritance).  
-- Helped debug **JWT errors**, migration issues, and Marshmallow validation quirks.  
-- Suggested **incremental refactoring** to keep the code clean while learning.  
+## Project status
 
----
+Toplivres is a **learning-driven backend project** built from a real operational need.
+It prioritizes correctness, clarity, and maintainability over feature breadth or trend adoption.
 
-## 7️⃣ Current Endpoints (Phase 2 Progress)  
-**Auth**  
-- `POST /auth/signup` — create new account (admin or customer)  
-- `POST /auth/login` — returns JWT  
-
-**Books**  
-- `GET /books` — list all books  
-- `GET /books/<id>` — get details of a book  
-- `POST /books` — create a new book (**admin only**)  
-
-## Orders vs Sales API by Role
-
-| **Endpoint**                 | **Customer**                                    | **Admin**                               |
-| ---------------------------- | ----------------------------------------------- | --------------------------------------- |
-| **POST /api/orders**             | ✅ Create *pending* order request                | ❌                                       |
-| **GET /api/orders**              | ✅ View own orders (pending + confirmed)         | ❌                                       |
-| **DELETE /api/orders/:id**      | ✅ Cancel own *pending* order                    | ✅ Cancel any order                      |
-| **PUT /api/admin/orders/:id/confirm** | ❌                                               | ✅ Approve → convert *pending* → *order* |
-| **POST /api/sales**              | ✅ Report sold books (with inventory validation) | ❌                                       |
-| **GET /api/sales**               | ✅ View own sales history                        | ❌                                       |
-| **GET /api/admin/operations**          | ❌                                               | ✅ View all operations (orders + sales)  |
-
-## Testing workflow
-
-1. Alice place an order containing a title not in catalog (book_id > 5)
-2. Alice try to add a book to catalog
-3. Admin add a sixth book
-4. Alice place an order containing only books from the updated catalog, a valid order
-5. Alice place a second order to place an order again
-6. Alice cancel the order
-7. Alice place a new order that is valid
-8. Admin confirm the delivery of Alice's pending order
-9. Alice submit a sale report <- try a new order instead and see if it passes even without sales reports following the previous one
+The project evolves slowly through small, deliberate improvements.
