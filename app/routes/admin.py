@@ -76,7 +76,7 @@ def all_operations():
     # 0 = orders, 1 = reports (donc reports après)
     type_rank = case((Operation.type == "order", 0), else_=1)
 
-    base = Operation.query.order_by(type_rank, desc(Operation.date), desc(Operation.id))
+    base = Operation.query.order_by(type_rank, desc(Operation.created_at), desc(Operation.id))
 
     actionable_q = or_(
         and_(Operation.type == "order", Operation.status.in_(["pending", "approved"])),
@@ -87,14 +87,14 @@ def all_operations():
     actionable = (
        base
         .filter(actionable_q)
-        .order_by(Operation.date.desc())
+        .order_by(Operation.created_at.desc())
         .all()
     )
 
     history = (
         base
         .filter(~actionable_q)
-        .order_by(Operation.date.desc())
+        .order_by(Operation.created_at.desc())
         .limit(25)
         .all()
     )
@@ -158,7 +158,7 @@ def export_operations_csv():
         .join(User, Operation.customer_id == User.id)
         .join(OperationItem, OperationItem.operation_id == Operation.id)
         .join(Book, OperationItem.book_id == Book.id)
-        .order_by(Operation.date.desc())
+        .order_by(Operation.created_at.desc())
         .limit(500)  # sécurité bêta
         .all()
     )

@@ -58,12 +58,14 @@ def create_operation(op_dict, user_map, book_map):
     else:
         normalized_type, normalized_status = "order", "pending"
 
+    created_at = parse_ts(op_dict.get("created_at"))
     op = Operation(
         id=op_dict["id"],
         customer_id=user.id,
         type=normalized_type,
         status=normalized_status,
-        date=parse_ts(op_dict.get("created_at")),
+        created_at=created_at,
+        date=created_at.date() if created_at else None,
     )
     db.session.add(op)
     db.session.flush()  # ensure op.id exists for items

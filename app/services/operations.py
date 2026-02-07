@@ -26,7 +26,7 @@ def can_request_delivery(user_id):
         Operation.query
         .filter_by(customer_id=user_id)
         .filter(and_(Operation.type == 'order', Operation.status.in_(['pending', 'approved', 'delivered'])))
-        .order_by(Operation.id.desc())  # Operation.date.desc()
+        .order_by(Operation.created_at.desc(), Operation.id.desc())
         .first()
     )
     if not last_delivery:
@@ -36,7 +36,7 @@ def can_request_delivery(user_id):
         Operation.query
         .filter_by(customer_id=user_id)
         .filter(Operation.type == 'report')
-        .filter(Operation.id > last_delivery.id)  # .filter(Operation.date > last_delivery.date)
+        .filter(Operation.created_at > last_delivery.created_at)
         .first()
     )
     return report_exists is not None, last_delivery

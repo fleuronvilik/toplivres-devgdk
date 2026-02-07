@@ -1,7 +1,8 @@
 from app.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func, and_, or_
-from datetime import date
+from datetime import date, datetime
+from sqlalchemy import event
 
 # def inventory(customer_id=None, book_id=None):
 #     if not customer_id and not book_id:
@@ -107,6 +108,7 @@ class Operation(db.Model):
     # New normalized fields
     type = db.Column(db.String(10), nullable=False, default="order")  # 'order' | 'report'
     status = db.Column(db.String(12), nullable=True, default="pending")  # orders: pending|approved|delivered|cancelled; reports: recorded
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     date = db.Column(db.Date, nullable=False, default=date.today)
     notes = db.Column(db.Text, nullable=True)
 
@@ -127,6 +129,12 @@ class Operation(db.Model):
         return f'{self.customer.name}: {normalized} on {self.date}\n---\n{details}'
 
     
+@event.listens_for(Operation, "before_insert")
+def _set_operation_dates(mapper, connection, target):
+    if not target.created_at:
+        target.created_at = datetime.utcnow()
+    if not target.date:
+        target.date = target.created_at.date()
 
 
 class OperationItem(db.Model):

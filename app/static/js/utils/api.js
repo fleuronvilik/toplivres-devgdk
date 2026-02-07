@@ -446,15 +446,41 @@ export async function refreshOrderBlockedState(options = {}) {
     const reports = rows.filter(op => op.type === "report");
     const hasPending = orders.some(op => op.status === "pending" || op.status === "approved");
     let lastOrder = null;
+    const opTime = (op) => {
+      const ts = op?.created_at || op?.createdAt || op?.date || "";
+      const parsed = Date.parse(ts);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
     orders.forEach(op => {
-      if (!lastOrder || (op.id || 0) > (lastOrder.id || 0)) lastOrder = op;
+      if (!lastOrder) {
+        lastOrder = op;
+        return;
+      }
+      const aTime = opTime(op);
+      const bTime = opTime(lastOrder);
+      if (Number.isFinite(aTime) && Number.isFinite(bTime)) {
+        if (aTime > bTime || (aTime === bTime && (op.id || 0) > (lastOrder.id || 0))) {
+          lastOrder = op;
+        }
+      } else if ((op.id || 0) > (lastOrder.id || 0)) {
+        lastOrder = op;
+      }
     });
 
     let reportRequired = false;
     let hasDelivery = false;
     if (lastOrder && lastOrder.status === "delivered") {
       hasDelivery = true;
-      const reportAfter = reports.some(r => (r.id || 0) > (lastOrder.id || 0));
+      const orderTime = opTime(lastOrder);
+      const reportAfter = reports.some(r => {
+        const reportTime = opTime(r);
+        if (Number.isFinite(reportTime) && Number.isFinite(orderTime)) {
+          if (reportTime > orderTime) return true;
+          if (reportTime === orderTime) return (r.id || 0) > (lastOrder.id || 0);
+          return false;
+        }
+        return (r.id || 0) > (lastOrder.id || 0);
+      });
       reportRequired = !reportAfter;
     }
 

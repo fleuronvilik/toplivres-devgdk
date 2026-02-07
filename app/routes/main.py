@@ -259,7 +259,7 @@ def get_history():
             # else:
                 # All except cancelled orders
                 # query = query.filter(or_(Operation.type == 'report', and_(Operation.type == 'order', Operation.status != 'cancelled')))
-        query = query.order_by(Operation.date.desc(), Operation.id.desc())
+        query = query.order_by(Operation.created_at.desc(), Operation.id.desc())
         schema = OperationSchema(many=True)
         return jsonify({"data": schema.dump(query.all())}), 200
 
