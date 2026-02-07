@@ -36,7 +36,10 @@ def can_request_delivery(user_id):
         Operation.query
         .filter_by(customer_id=user_id)
         .filter(Operation.type == 'report')
-        .filter(Operation.created_at > last_delivery.created_at)
+        .filter(
+            (Operation.created_at > last_delivery.created_at)
+            | ((Operation.created_at == last_delivery.created_at) & (Operation.id > last_delivery.id))
+        )
         .first()
     )
     return report_exists is not None, last_delivery
